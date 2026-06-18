@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Dynamic Daily Scheduler</title>
+<title>My Premium Daily Scheduler</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -13,26 +13,33 @@
   --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.18);
   --radius:8px;--radius-lg:12px;
   --font:'Inter',system-ui,sans-serif;
+  --accent:#D85A30;
 }
-@media(prefers-color-scheme:dark){
+/* Manual and System Dark Mode Toggle */
+[data-theme='dark'],
+:root:not([data-theme='light']) @media(prefers-color-scheme:dark){
   :root{
     --bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;
     --text:#f0efe9;--text2:#a0a09c;--text3:#6b6b68;
     --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.18);
   }
 }
-html,body{min-height:100%;background:var(--bg3);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5}
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+html,body{min-height:100%;background:var(--bg3);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;transition: background 0.2s, color 0.2s;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600&display=swap');
 
 .app-shell{max-width:1100px;margin:0 auto;padding:0 16px 60px}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0 20px;border-bottom:0.5px solid var(--border);margin-bottom:24px}
 .logo{font-size:18px;font-weight:600;letter-spacing:-0.3px}
-.logo span{color:#D85A30}
+.logo span{color:var(--accent)}
 .tabs{display:flex;gap:4px;background:var(--bg2);border-radius:var(--radius-lg);padding:4px;border:0.5px solid var(--border)}
 .tab{padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--text2);border-radius:var(--radius);transition:all .15s}
 .tab:hover{color:var(--text)}
 .tab.active{background:var(--bg);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.08);border:0.5px solid var(--border)}
 .section{display:none}.section.active{display:block}
+
+/* Gamification Streak Bar */
+.streak-banner { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #D85A30, #F47C53); color: #fff; padding: 12px 20px; border-radius: var(--radius-lg); margin-bottom: 16px; font-size: 14px; font-weight: 500; box-shadow: 0 4px 12px rgba(216,90,48,0.15); }
+.streak-num { font-size: 20px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
 
 /* Cards */
 .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:16px}
@@ -44,16 +51,928 @@ input[type=text],input[type=time],input[type=number],select,textarea{
   background:var(--bg);color:var(--text);width:100%;font-family:var(--font);outline:none;
   transition:border-color .15s;
 }
-input:focus,select:focus,textarea:focus{border-color:#D85A30;box-shadow:0 0 0 3px rgba(216,90,48,0.12)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(216,90,48,0.12)}
 textarea{resize:vertical;min-height:80px}
+
+/* Color Picker input */
+.color-input-wrapper { display: flex; align-items: center; gap: 6px; }
+input[type=color] { border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; background: none; }
 
 /* Buttons */
 .btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;padding:8px 16px;border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);cursor:pointer;transition:all .15s;font-family:var(--font)}
 .btn:hover{background:var(--bg2);border-color:var(--text3)}
 .btn:active{transform:scale(0.98)}
 .btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-@media(prefers-color-scheme:dark){.btn-primary{background:#f0efe9;color:#1a1a1a;border-color:#f0efe9}}
-.btn-primary:hover{opacity:0.88;background:#1a1a1a}
+[data-theme='dark'] .btn-primary {background:#f0efe9;color:#1a1a1a;border-color:#f0efe9}
+:root:not([data-theme='light']) @media(prefers-color-scheme:dark){.btn-primary{background:#f0efe9;color:#1a1a1a;border-color:#f0efe9}}
+.btn-primary:hover{opacity:0.88}
 .btn-danger{color:#A32D2D;border-color:rgba(163,45,45,0.3)}
 .btn-danger:hover{background:#FCEBEB}
-.btn-sm{padding:5px 10
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* Toggle */
+.toggle{position:relative;width:36px;height:20px;display:inline-block;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:var(--border2);border-radius:999px;cursor:pointer;transition:.2s}
+.slider:before{content:"";position:absolute;width:14px;height:14px;left:3px;top:3px;background:white;border-radius:50%;transition:.2s}
+input:checked+.slider{background:var(--accent)}
+input:checked+.slider:before{transform:translateX(16px)}
+
+/* Badges */
+.badge{font-size:11px;padding:2px 8px;border-radius:999px;font-weight:500;white-space:nowrap}
+.t1{background:#FAECE7;color:#993C1D}.t2{background:#E6F1FB;color:#185FA5}
+.t3{background:#EAF3DE;color:#3B6D11}.t4{background:#F1EFE8;color:#5F5E5A}
+.tr{background:#FBEAF0;color:#993556}
+
+/* Calendar */
+.week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+.week-title{font-size:17px;font-weight:600}
+.week-sub{font-size:13px;color:var(--text2)}
+.week-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;overflow-x:auto}
+@media(max-width:700px){.week-grid{grid-template-columns:repeat(7,minmax(110px,1fr))}}
+.day-head{font-size:11px;font-weight:600;text-align:center;padding:8px 4px 6px;background:var(--bg2);border-radius:var(--radius) var(--radius) 0 0;border:0.5px solid var(--border);border-bottom:none;color:var(--text2)}
+.day-head .date{font-size:16px;font-weight:600;color:var(--text);display:block;margin-top:2px}
+.day-head.today{background:#FAECE7;color:#993C1D;border-color:rgba(216,90,48,0.3)}
+.day-head.today .date{color:var(--accent)}
+.day-head.weekend{background:#EEEDFE;color:#534AB7;border-color:rgba(83,74,183,0.2)}
+.day-head.weekend .date{color:#534AB7}
+.day-body{border:0.5px solid var(--border);border-radius:0 0 var(--radius) var(--radius);padding:6px;min-height:220px;background:var(--bg)}
+.block{border-radius:6px;padding:5px 7px;margin-bottom:4px;font-size:11px;line-height:1.35;border-left:4px solid transparent;position:relative}
+.block-name{font-weight:600;display:block}
+
+/* FIXED TIME VISIBILITY COLOR OPTIMIZATION */
+.block-time{font-size:10px;font-weight:600;color:#2a2a28;opacity:0.85;display:block;margin-top:2px}
+[data-theme='dark'] .block-time { color:#e0dfd5; opacity:0.9; }
+
+.legend{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+.legend-dot{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:500}
+
+/* Task list gamification strikeout formatting */
+.task-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border);transition: opacity 0.2s;}
+.task-row:last-child{border-bottom:none}
+.task-row.completed-task { opacity: 0.55; }
+.task-row.completed-task .task-name { text-decoration: line-through; color: var(--text2); }
+.task-info{flex:1;min-width:0}
+.task-name{font-size:14px;font-weight:500}
+.task-meta{display:flex;gap:6px;align-items:center;margin-top:4px;flex-wrap:wrap}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:600px){.stats{grid-template-columns:repeat(2,1fr);}}
+.stat{background:var(--bg2);border-radius:var(--radius);padding:14px;text-align:center}
+.stat-n{font-size:22px;font-weight:600}
+.stat-l{font-size:11px;color:var(--text2);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+
+/* Settings rows */
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:0.5px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:14px;font-weight:500}
+.setting-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.grid4{display:grid;grid-template-columns:repeat(4, 1fr);gap:10px}
+@media(max-width: 600px){.grid4{grid-template-columns:1fr 1fr;}}
+.field-label{font-size:12px;color:var(--text2);margin-bottom:5px}
+
+/* AI output */
+#ai-result{font-size:14px;line-height:1.75;white-space:pre-wrap;color:var(--text)}
+.ai-loading{display:flex;align-items:center;gap:10px;color:var(--text2);font-size:13px}
+.spinner{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Add task form */
+.add-row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border)}
+
+/* Routine Window Row Styles */
+.routine-window-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+@media(max-width:600px){.routine-window-row { grid-template-columns: 1fr; }}
+
+/* Saved toast */
+#toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:var(--radius-lg);font-size:13px;font-weight:500;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999}
+[data-theme='dark'] #toast {background:#f0efe9;color:#1a1a1a}
+:root:not([data-theme='light']) @media(prefers-color-scheme:dark){#toast{background:#f0efe9;color:#1a1a1a}}
+
+/* Priority list drag alternative */
+.priority-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border)}
+.priority-item:last-child{border-bottom:none}
+.task-sched{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:500;padding:2px 8px;border-radius:999px;background:#FAECE7;color:#993C1D}
+.task-sched.skip{background:#F1EFE8;color:#a0a09c}
+.notif-pill{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:500;padding:2px 10px;border-radius:999px}
+.notif-on{background:#EAF3DE;color:#3B6D11}
+.notif-off{background:#F1EFE8;color:#5F5E5A}
+.notif-blocked{background:#FBEAF0;color:#993556}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div class="topbar">
+    <div class="logo">dynamic<span>scheduler</span><span id="notif-dot" title="Notifications on" style="display:none;color:#D85A30;margin-left:6px;font-size:13px"><i class="ti ti-bell-filled"></i></span></div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" onclick="showTab('calendar',this)" role="tab"><i class="ti ti-calendar"></i> Week</button>
+      <button class="tab" onclick="showTab('tasks',this)" role="tab"><i class="ti ti-list-check"></i> Tasks</button>
+      <button class="tab" onclick="showTab('settings',this)" role="tab"><i class="ti ti-settings"></i> Setup & Routines</button>
+      <button class="tab" onclick="showTab('ai',this)" role="tab"><i class="ti ti-sparkles"></i> AI plan</button>
+    </div>
+  </div>
+
+  <div class="streak-banner">
+    <div>⚡ Consistent Focus Momentum</div>
+    <div class="streak-num" id="streak-disp">🔥 0 Day Streak</div>
+  </div>
+
+  <div id="tab-calendar" class="section active">
+    <div class="week-nav">
+      <div>
+        <div class="week-title" id="week-label">This week</div>
+        <div class="week-sub" id="week-range"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="changeWeek(-1)"><i class="ti ti-chevron-left"></i></button>
+        <button class="btn" onclick="changeWeek(1)"><i class="ti ti-chevron-right"></i></button>
+        <button class="btn btn-primary" onclick="generateAndRender()"><i class="ti ti-refresh"></i> Refresh</button>
+        <button class="btn" onclick="exportToICS()" title="Export complete layout as .ics file to your devices native calendar"><i class="ti ti-calendar-share"></i> Export .ics</button>
+      </div>
+    </div>
+    <div class="week-grid" id="week-grid"></div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div id="tab-tasks" class="section">
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="s-tasks">0</div><div class="stat-l">active tasks</div></div>
+      <div class="stat"><div class="stat-n" id="s-time">0h</div><div class="stat-l">focus commitment</div></div>
+      <div class="stat"><div class="stat-n" id="s-done">0</div><div class="stat-l">completed today</div></div>
+      <div class="stat"><div class="stat-n" id="s-gap">15m</div><div class="stat-l">break spacing</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tasks & Custom Commitments</div>
+      <div id="task-list"></div>
+      <div class="add-row">
+        <div style="flex:2;min-width:130px"><div class="field-label">Task name</div><input type="text" id="new-name" placeholder="e.g. Code Review Project"/></div>
+        <div style="min-width:140px"><div class="field-label">Priority</div>
+          <select id="new-tier">
+            <option value="1">Tier 1 — critical</option>
+            <option value="2">Tier 2 — high</option>
+            <option value="3">Tier 3 — medium</option>
+            <option value="4">Tier 4 — low</option>
+            <option value="r">Reminder Block</option>
+          </select>
+        </div>
+        <div style="min-width:80px"><div class="field-label">Min/day</div><input type="number" id="new-mins" value="30" min="5" max="300" style="width:80px"/></div>
+        <div style="min-width:120px"><div class="field-label">Days</div>
+          <select id="new-days">
+            <option value="daily">Every day</option>
+            <option value="weekdays">Weekdays only</option>
+            <option value="alternate">Alternate days</option>
+            <option value="weekends">Weekends only</option>
+          </select>
+        </div>
+        <div style="min-width:65px"><div class="field-label">Color</div>
+          <div class="color-input-wrapper">
+            <input type="color" id="new-color" value="#378ADD"/>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addTask()" style="margin-top:18px"><i class="ti ti-plus"></i> Add</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Priority hierarchy commitment focus</div>
+      <div id="priority-list"></div>
+    </div>
+  </div>
+
+  <div id="tab-settings" class="section">
+    <div class="card">
+      <div class="card-title">Visual Styling Settings</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Manual Interface Theme</div>
+          <div class="setting-sub">Switch configuration between explicit light and dark themes manually</div>
+        </div>
+        <button class="btn btn-sm" onclick="toggleExplicitTheme()"><i class="ti ti-sun-moon"></i> Toggle Theme Mode</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Daily Parameters & Spacing Gap</div>
+      <div class="grid3">
+        <div><div class="field-label">Wake Up Time</div><input type="time" id="t-wake" onchange="save()"/></div>
+        <div><div class="field-label">Bedtime</div><input type="time" id="t-bed" onchange="save()"/></div>
+        <div><div class="field-label">Break Spacing Between Tasks (mins)</div><input type="number" id="t-gap" min="0" max="60" onchange="save()"/></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Standard Daily Meal & Prep Anchors</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Define targets and durations for your personal routines to protect blocks across your daily grid.</p>
+      <div class="grid4">
+        <div>
+          <div class="field-label">Morning Ready (Start)</div><input type="time" id="r-ready-s" onchange="save()"/>
+          <div class="field-label" style="margin-top:4px">Duration (mins)</div><input type="number" id="r-ready-d" min="0" onchange="save()"/>
+        </div>
+        <div>
+          <div class="field-label">Breakfast (Start)</div><input type="time" id="r-break-s" onchange="save()"/>
+          <div class="field-label" style="margin-top:4px">Duration (mins)</div><input type="number" id="r-break-d" min="0" onchange="save()"/>
+        </div>
+        <div>
+          <div class="field-label">Lunch (Start)</div><input type="time" id="r-lunch-s" onchange="save()"/>
+          <div class="field-label" style="margin-top:4px">Duration (mins)</div><input type="number" id="r-lunch-d" min="0" onchange="save()"/>
+        </div>
+        <div>
+          <div class="field-label">Dinner (Start)</div><input type="time" id="r-dinner-s" onchange="save()"/>
+          <div class="field-label" style="margin-top:4px">Duration (mins)</div><input type="number" id="r-dinner-d" min="0" onchange="save()"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Custom Fixed Infrastructure Blocks</div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:12px">Define arbitrary hard constraints (e.g. Lectures, Shared Commutes, Recurrent Practice) that can be cleared or adjusted anytime.</p>
+      <div id="routine-windows-container"></div>
+      <button class="btn btn-sm btn-primary" onclick="addNewRoutineWindow()"><i class="ti ti-plus"></i> Add Custom Anchor Block</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Automated Task Start Reminders</div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Browser Notifications</div>
+          <div class="setting-sub">Send alert ping windows prior to slot transition actions</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span id="notif-status-pill" class="notif-pill notif-off"><i class="ti ti-bell-off"></i> Off</span>
+          <select id="notif-advance" onchange="save()" style="width:auto">
+            <option value="5">5 min before</option>
+            <option value="10">10 min before</option>
+            <option value="15">15 min before</option>
+          </select>
+          <button class="btn btn-sm" id="notif-btn" onclick="handleNotifBtn()"><i class="ti ti-bell"></i> <span id="notif-btn-label">Enable</span></button>
+        </div>
+      </div>
+      <div id="notif-upcoming" style="font-size:12px;color:var(--text2);margin-top:8px;display:none"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="exportData()"><i class="ti ti-download"></i> Export configuration backup</button>
+      <button class="btn btn-danger" onclick="if(confirm('Reset all scheduler parameters to global blanks?'))resetAll()"><i class="ti ti-trash"></i> Reset system data</button>
+    </div>
+  </div>
+
+  <div id="tab-ai" class="section">
+    <div class="card">
+      <div class="card-title">AI intelligent weekly engine context builder</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Share upcoming critical parameters or target shifts. The engine evaluates priorities against your constraints to output recommended distribution adjustments.</p>
+      <textarea id="ai-prompt" placeholder="e.g. I have an upcoming test block on Friday, expand target priority preparation parameters on Wednesday..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="ai-btn" onclick="callAI()"><i class="ti ti-sparkles"></i> Build Recommended Plan Context</button>
+        <button class="btn" onclick="generateAndRender();showTab('calendar',document.querySelector('.tab'))"><i class="ti ti-calendar"></i> Recalculate schedule calendar</button>
+      </div>
+    </div>
+    <div id="ai-card" class="card" style="display:none">
+      <div class="card-title">Engine strategic guidelines output</div>
+      <div id="ai-result"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast">Saved configuration change</div>
+
+<script>
+const DEFAULT_SETTINGS={
+  wake:'06:00',bed:'22:30',breakGap:15,themeMode:'system',
+  readyStart:'06:00',readyDur:45,
+  breakfastStart:'07:00',breakfastDur:30,
+  lunchStart:'12:30',lunchDur:45,
+  dinnerStart:'18:30',dinnerDur:60,
+  notif:false,notifAdvance:10,
+  customRoutines:[
+    {name:'Structural Commitment Block',days:'weekdays',start:'09:00',end:'15:00'}
+  ]
+};
+const DEFAULT_TASKS=[
+  {id:1,name:'Critical Priority Focus',tier:1,mins:60,active:true,days:'weekdays',isReminder:false,customColor:'#D85A30',completedDates:[]},
+  {id:2,name:'High Core Practice',tier:2,mins:45,active:true,days:'daily',isReminder:false,customColor:'#378ADD',completedDates:[]},
+  {id:3,name:'General Supplemental Review',tier:3,mins:30,active:true,days:'alternate',isReminder:false,customColor:'#639922',completedDates:[]},
+];
+
+let cfg={};let tasks=[];let weekOff=0;let nextId=20;
+
+function load(){
+  try{cfg=JSON.parse(localStorage.getItem('dyn-pr-cfg'))||{...DEFAULT_SETTINGS};}catch{cfg={...DEFAULT_SETTINGS};}
+  try{tasks=JSON.parse(localStorage.getItem('dyn-pr-tasks'))||DEFAULT_TASKS.map(t=>({...t}));}catch{tasks=DEFAULT_TASKS.map(t=>({...t}));}
+  try{nextId=JSON.parse(localStorage.getItem('dyn-pr-nid'))||20;}catch{nextId=20;}
+  
+  // Set explicit interface visual mode choice override if present
+  if(cfg.themeMode && cfg.themeMode !== 'system'){
+    document.body.setAttribute('data-theme', cfg.themeMode);
+  } else {
+    document.body.removeAttribute('data-theme');
+  }
+
+  applyToUI();
+  renderRoutineWindowsForm();
+  evaluateStreakCounter();
+}
+
+function save(){
+  readFromUI();
+  localStorage.setItem('dyn-pr-cfg',JSON.stringify(cfg));
+  localStorage.setItem('dyn-pr-tasks',JSON.stringify(tasks));
+  localStorage.setItem('dyn-pr-nid',JSON.stringify(nextId));
+  showToast();generateAndRender();
+  if(cfg.notif)scheduleNotifications();updateNotifUI();
+  evaluateStreakCounter();
+}
+
+function showToast(){
+  const t=document.getElementById('toast');
+  t.style.opacity='1';setTimeout(()=>t.style.opacity='0',1500);
+}
+
+function readFromUI(){
+  cfg.wake=document.getElementById('t-wake').value||cfg.wake;
+  cfg.bed=document.getElementById('t-bed').value||cfg.bed;
+  cfg.breakGap=parseInt(document.getElementById('t-gap').value)??15;
+  cfg.notifAdvance=parseInt(document.getElementById('notif-advance').value)||10;
+
+  cfg.readyStart=document.getElementById('r-ready-s').value;
+  cfg.readyDur=parseInt(document.getElementById('r-ready-d').value)||0;
+  cfg.breakfastStart=document.getElementById('r-break-s').value;
+  cfg.breakfastDur=parseInt(document.getElementById('r-break-d').value)||0;
+  cfg.lunchStart=document.getElementById('r-lunch-s').value;
+  cfg.lunchDur=parseInt(document.getElementById('r-lunch-d').value)||0;
+  cfg.dinnerStart=document.getElementById('r-dinner-s').value;
+  cfg.dinnerDur=parseInt(document.getElementById('r-dinner-d').value)||0;
+
+  // Sync custom routines list
+  const container=document.getElementById('routine-windows-container');
+  const rows=container.querySelectorAll('.routine-window-row');
+  cfg.customRoutines=[];
+  rows.forEach(row=>{
+    cfg.customRoutines.push({
+      name:row.querySelector('.r-name').value || 'Anchor window',
+      days:row.querySelector('.r-days').value,
+      start:row.querySelector('.r-start').value || '12:00',
+      end:row.querySelector('.r-end').value || '13:00'
+    });
+  });
+}
+
+function applyToUI(){
+  document.getElementById('t-wake').value=cfg.wake||'06:00';
+  document.getElementById('t-bed').value=cfg.bed||'22:30';
+  document.getElementById('t-gap').value=cfg.breakGap??15;
+  document.getElementById('notif-advance').value=cfg.notifAdvance||10;
+
+  document.getElementById('r-ready-s').value=cfg.readyStart||'06:00';
+  document.getElementById('r-ready-d').value=cfg.readyDur??45;
+  document.getElementById('r-break-s').value=cfg.breakfastStart||'07:00';
+  document.getElementById('r-break-d').value=cfg.breakfastDur??30;
+  document.getElementById('r-lunch-s').value=cfg.lunchStart||'12:30';
+  document.getElementById('r-lunch-d').value=cfg.lunchDur??45;
+  document.getElementById('r-dinner-s').value=cfg.dinnerStart||'18:30';
+  document.getElementById('r-dinner-d').value=cfg.dinnerDur??60;
+  updateNotifUI();
+}
+
+function toggleExplicitTheme(){
+  const curr = document.body.getAttribute('data-theme');
+  let target = 'light';
+  if(curr === 'light') target = 'dark';
+  else if(curr === 'dark') target = 'system';
+  
+  if(target === 'system'){
+    document.body.removeAttribute('data-theme');
+  } else {
+    document.body.setAttribute('data-theme', target);
+  }
+  cfg.themeMode = target;
+  localStorage.setItem('dyn-pr-cfg', JSON.stringify(cfg));
+  showToast();
+}
+
+function renderRoutineWindowsForm(){
+  const container=document.getElementById('routine-windows-container');
+  container.innerHTML='';
+  (cfg.customRoutines||[]).forEach((r,idx)=>{
+    const d=document.createElement('div');
+    d.className='routine-window-row';
+    d.innerHTML=`
+      <input type="text" class="r-name" value="${r.name}" placeholder="Routine window name" onchange="save()"/>
+      <select class="r-days" onchange="save()">
+        <option value="daily" ${r.days==='daily'?'selected':''}>Every Day</option>
+        <option value="weekdays" ${r.days==='weekdays'?'selected':''}>Weekdays only</option>
+        <option value="weekends" ${r.days==='weekends'?'selected':''}>Weekends only</option>
+      </select>
+      <input type="time" class="r-start" value="${r.start}" onchange="save()"/>
+      <input type="time" class="r-end" value="${r.end}" onchange="save()"/>
+      <button class="btn btn-sm btn-danger" onclick="removeRoutineWindow(${idx})"><i class="ti ti-trash"></i></button>
+    `;
+    container.appendChild(d);
+  });
+}
+
+function addNewRoutineWindow(){
+  if(!cfg.customRoutines) cfg.customRoutines=[];
+  cfg.customRoutines.push({name:'New structural item',days:'weekdays',start:'16:00',end:'17:00'});
+  renderRoutineWindowsForm();
+  save();
+}
+
+function removeRoutineWindow(idx){
+  cfg.customRoutines.splice(idx,1);
+  renderRoutineWindowsForm();
+  save();
+}
+
+/* Logic & Layout calculation core */
+function fmt(t){if(!t)return'';const[h,m]=t.split(':').map(Number);const ap=h>=12?'PM':'AM';const h12=h%12||12;return m===0?`${h12}${ap}`:`${h12}:${String(m).padStart(2,'0')}${ap}`;}
+function addM(t,m){const[h,mm]=t.split(':').map(Number);const tot=h*60+mm+m;return`${String(Math.floor(tot/60)%24).padStart(2,'0')}:${String(tot%60).padStart(2,'0')}`;}
+function toMins(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
+function mh(m){return m>=60?`${Math.round(m/60*10)/10}h`:`${m}m`;}
+
+// Baseline Fallback System Colors
+const DEFAULT_COLORS={
+  1:{bg:'#FAECE7',c:'#993C1D',border:'#D85A30'},
+  2:{bg:'#E6F1FB',c:'#185FA5',border:'#378ADD'},
+  3:{bg:'#EAF3DE',c:'#3B6D11',border:'#639922'},
+  4:{bg:'#F1EFE8',c:'#5F5E5A',border:'#888780'},
+  r:{bg:'#FBEAF0',c:'#993556',border:'#D4537E'},
+  routine:{bg:'#EEEDFE',c:'#534AB7',border:'#7F77DD'},
+  meal:{bg:'#E1F5EE',c:'#0F6E56',border:'#1D9E75'}
+};
+
+function block(name,start,end,type,customColor,note){return{name,start,end,type,customColor:customColor||null,note:note||''};}
+
+function buildDay(di){
+  const isWeekend=di>=5;
+  const blocks=[];
+
+  // Helper inject standard routine constraints safely
+  const pushStaticBlock=(name,sStr,duration,type)=>{
+    if(!sStr || duration<=0)return;
+    blocks.push(block(name,sStr,addM(sStr,duration),type));
+  };
+
+  pushStaticBlock('Morning Ready Routine',cfg.readyStart,cfg.readyDur,'routine');
+  pushStaticBlock('Breakfast Anchor',cfg.breakfastStart,cfg.breakfastDur,'meal');
+  pushStaticBlock('Lunch Window',cfg.lunchStart,cfg.lunchDur,'meal');
+  pushStaticBlock('Dinner Window',cfg.dinnerStart,cfg.dinnerDur,'meal');
+
+  // Push custom user custom routine parameters if active for current slot day match
+  (cfg.customRoutines||[]).forEach(r=>{
+    if(r.days==='weekdays' && isWeekend)return;
+    if(r.days==='weekends' && !isWeekend)return;
+    const dur=toMins(r.end)-toMins(r.start);
+    if(dur>0) blocks.push(block(r.name,r.start,r.end,'routine'));
+  });
+
+  // Sort fixed barriers chronologically
+  blocks.sort((a,b)=>toMins(a.start)-toMins(b.start));
+
+  // Scan dynamic placement allocations spacing
+  const flexibleTasks=tasks.filter(t=>t.active && !t.isReminder);
+  const sortedTasks=[...flexibleTasks].sort((a,b)=>(typeof a.tier==='number'?a.tier:9)-(typeof b.tier==='number'?b.tier:9));
+
+  let currentCursor=toMins(cfg.wake);
+  const bedMins=toMins(cfg.bed);
+  const dynamicSpacing=cfg.breakGap??15;
+
+  for(const t of sortedTasks){
+    if(t.days==='weekdays'&&isWeekend)continue;
+    if(t.days==='weekends'&&!isWeekend)continue;
+    if(t.days==='alternate'&&di%2===1)continue;
+
+    let targetDuration=t.mins;
+    
+    // Look ahead to find free interval room skipping block overlap items
+    while(currentCursor + targetDuration <= bedMins){
+      let trialStart=currentCursor;
+      let trialEnd=trialStart+targetDuration;
+      let conflict=false;
+
+      for(const b of blocks){
+        let bStart=toMins(b.start);
+        let bEnd=toMins(b.end);
+        if(trialStart < bEnd && trialEnd > bStart){
+          conflict=true;
+          currentCursor=bEnd+dynamicSpacing; // Step forward completely past structural element + spacing buffer
+          break;
+        }
+      }
+
+      if(!conflict){
+        const startStr=`${String(Math.floor(trialStart/60)).padStart(2,'0')}:${String(trialStart%60).padStart(2,'0')}`;
+        const endStr=`${String(Math.floor(trialEnd/60)).padStart(2,'0')}:${String(trialEnd%60).padStart(2,'0')}`;
+        blocks.push(block(t.name,startStr,endStr,t.tier,t.customColor));
+        
+        currentCursor=trialEnd+dynamicSpacing; // Push cursor ahead by layout gap spacing configuration value 
+        break;
+      }
+    }
+  }
+
+  // Inject reminders
+  tasks.filter(t=>t.active&&t.isReminder).forEach(rem=>{
+    if(rem.days==='weekdays'&&isWeekend)return;
+    if(rem.days==='weekends'&&!isWeekend)return;
+    blocks.push(block(rem.name,'','','r',rem.customColor,'📌 reminder'));
+  });
+
+  return blocks.sort((a,b)=>toMins(a.start)-toMins(b.start));
+}
+
+function blockEl(b){
+  let stylingBg, stylingColor, stylingBorder;
+  
+  if(b.customColor){
+    stylingBg=b.customColor+'1c'; // light opacity alpha variation shift
+    stylingColor=b.customColor;
+    stylingBorder=b.customColor;
+  } else {
+    const cChoice=DEFAULT_COLORS[b.type]||DEFAULT_COLORS[4];
+    stylingBg=cChoice.bg;
+    stylingColor=cChoice.c;
+    stylingBorder=cChoice.border;
+  }
+
+  const isReminder=b.note&&b.note.includes('📌');
+  return`<div class="block" style="background:${stylingBg};border-left-color:${stylingBorder}">
+    <span class="block-name" style="color:${stylingColor}">${b.name}${isReminder?' 📌':''}</span>
+    ${b.start?`<span class="block-time">${fmt(b.start)}${b.end?' – '+fmt(b.end):''}</span>`:''}
+  </div>`;
+}
+
+function generateAndRender(){
+  const grid=document.getElementById('week-grid');
+  grid.innerHTML='';
+  const now=new Date();
+  const mon=new Date(now);
+  mon.setDate(now.getDate()-((now.getDay()+6)%7)+weekOff*7);
+  const dates=Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
+  const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const todayStr=now.toDateString();
+
+  document.getElementById('week-label').textContent=weekOff===0?'This week':weekOff===1?'Next week':weekOff===-1?'Last week':`Week of ${dates[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+  document.getElementById('week-range').textContent=`${dates[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${dates[6].toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+
+  DAYS.forEach((d,i)=>{
+    const isWeekend=i>=5;
+    const isToday=dates[i].toDateString()===todayStr;
+    const col=document.createElement('div');
+    col.className='day-col';
+    const headClass=`day-head${isToday?' today':isWeekend?' weekend':''}`;
+    const dayBlocks=buildDay(i);
+    col.innerHTML=`<div class="${headClass}">${d}<span class="date">${dates[i].getDate()}</span></div>
+      <div class="day-body">${dayBlocks.map(blockEl).join('')}</div>`;
+    grid.appendChild(col);
+  });
+  renderLegend();
+  document.getElementById('s-gap').textContent=(cfg.breakGap??15)+'m';
+}
+
+function renderLegend(){
+  const items=[
+    {n:'Routine window',t:'routine'},{n:'Meals anchors',t:'meal'},
+    {n:'Tier 1',t:1},{n:'Tier 2',t:2},{n:'Tier 3',t:3},{n:'Reminder Blocks',t:'r'},
+  ];
+  document.getElementById('legend').innerHTML=items.map(it=>{
+    const c=DEFAULT_COLORS[it.t]||DEFAULT_COLORS[4];
+    return`<span class="legend-dot" style="background:${c.bg};color:${c.c};border:0.5px solid ${c.border}40">${it.n}</span>`;
+  }).join('');
+}
+
+function renderTasks(){
+  const list=document.getElementById('task-list');
+  const todayTimes=getTodayTaskTimes();
+  const todayIso=new Date().toISOString().split('T')[0];
+
+  list.innerHTML=tasks.map(t=>{
+    const tierLabel=t.tier===1?'Tier 1 · critical':t.tier===2?'Tier 2 · high':t.tier===3?'Tier 3 · medium':t.tier==='r'?'Reminder Block':'Tier 4 · low';
+    const badgeCls=t.tier===1?'t1':t.tier===2?'t2':t.tier===3?'t3':t.tier==='r'?'tr':'t4';
+    const sched=todayTimes[t.name];
+    const schedHtml=t.isReminder?'':sched
+      ?`<span class="task-sched"><i class="ti ti-clock"></i> Today ${fmt(sched.start)}–${fmt(sched.end)}</span>`
+      :`<span class="task-sched skip">Not active today</span>`;
+    
+    // Check gamification log
+    const completedToday = t.completedDates && t.completedDates.includes(todayIso);
+    const customAccentIndicator = t.customColor ? `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${t.customColor};margin-right:4px;"></span>` : '';
+
+    return`<div class="task-row ${completedToday ? 'completed-task' : ''}" style="opacity:${t.active?1:0.45}">
+      <input type="checkbox" style="width:16px;height:16px;cursor:pointer;" ${completedToday?'checked':''} onclick="toggleTaskCompletionLogs(${t.id})" title="Mark task completed for gamification metrics tracking"/>
+      <div class="task-info">
+        <div class="task-name">${customAccentIndicator}${t.name}</div>
+        <div class="task-meta">
+          ${schedHtml}
+          <span class="badge ${badgeCls}">${tierLabel}</span>
+          ${t.mins>0?`<span style="font-size:11px;color:var(--text2)">${t.mins}m/day</span>`:''}
+          <span style="font-size:11px;color:var(--text2)">${t.days}</span>
+        </div>
+      </div>
+      <label class="toggle" title="Toggle general inclusion availability status"><input type="checkbox" ${t.active?'checked':''} onchange="toggleTaskActiveState(${t.id})"><span class="slider"></span></label>
+      <button class="btn btn-sm btn-danger" onclick="removeTask(${t.id})"><i class="ti ti-trash"></i></button>
+    </div>`;
+  }).join('');
+
+  const active=tasks.filter(t=>t.active);
+  const totalMins=active.filter(t=>!t.isReminder&&t.mins>0).reduce((s,t)=>s+t.mins,0);
+  const totalDoneToday=tasks.filter(t=>t.completedDates && t.completedDates.includes(todayIso)).length;
+
+  document.getElementById('s-tasks').textContent=active.length;
+  document.getElementById('s-time').textContent=mh(totalMins);
+  document.getElementById('s-done').textContent=totalDoneToday;
+  
+  renderPriority();
+}
+
+function toggleTaskCompletionLogs(id){
+  const t = tasks.find(x=>x.id===id);
+  if(!t) return;
+  if(!t.completedDates) t.completedDates = [];
+  const todayIso = new Date().toISOString().split('T')[0];
+  
+  if(t.completedDates.includes(todayIso)){
+    t.completedDates = t.completedDates.filter(d=>d!==todayIso);
+  } else {
+    t.completedDates.push(todayIso);
+  }
+  
+  localStorage.setItem('dyn-pr-tasks', JSON.stringify(tasks));
+  renderTasks();
+  evaluateStreakCounter();
+  showToast();
+}
+
+function evaluateStreakCounter(){
+  let maxStreak = 0;
+  let currentStreak = 0;
+  
+  // Collect unique dates across all task completion lists
+  let allDates = new Set();
+  tasks.forEach(t=>{ if(t.completedDates) t.completedDates.forEach(d=>allDates.add(d)); });
+  let sortedDates = Array.from(allDates).sort((a,b)=>new Date(b)-new Date(a)); // sort descending
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const yesterday = new Date(); yesterday.setDate(yesterday.getDate()-1);
+  const yesterStr = yesterday.toISOString().split('T')[0];
+
+  // If someone completed an item today or yesterday, evaluate continuous consecutive chains backwards
+  if(allDates.has(todayStr) || allDates.has(yesterStr)){
+    let check = allDates.has(todayStr) ? new Date() : yesterday;
+    while(true){
+      let iso = check.toISOString().split('T')[0];
+      if(allDates.has(iso)){
+        currentStreak++;
+        check.setDate(check.getDate()-1);
+      } else {
+        break;
+      }
+    }
+  }
+  
+  document.getElementById('streak-disp').textContent = `🔥 ${currentStreak} Day Streak`;
+}
+
+/* iCalendar (.ics) format file string builders */
+function exportToICS(){
+  let icsLines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//DynamicScheduler//PremiumTaskEngine//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH"
+  ];
+
+  const now = new Date();
+  const currentDayIndex = (now.getDay()+6)%7;
+  
+  // Sample layout tasks generated across the 7 week viewport grid columns
+  for(let i=0; i<7; i++){
+    const targetDate = new Date(now);
+    targetDate.setDate(now.getDate() - currentDayIndex + i + (weekOff*7));
+    const dayBlocks = buildDay(i);
+
+    dayBlocks.forEach(b=>{
+      if(!b.start || !b.end) return; // skip items without time boundaries
+      
+      const[sH, sM] = b.start.split(':').map(Number);
+      const[eH, eM] = b.end.split(':').map(Number);
+      
+      let startStamp = new Date(targetDate); startStamp.setHours(sH, sM, 0, 0);
+      let endStamp = new Date(targetDate); endStamp.setHours(eH, eM, 0, 0);
+
+      const toIcalFormat=(d)=>{
+        return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      icsLines.push("BEGIN:VEVENT");
+      icsLines.push(`SUMMARY:${b.name}`);
+      icsLines.push(`DTSTART:${toIcalFormat(startStamp)}`);
+      icsLines.push(`DTEND:${toIcalFormat(endStamp)}`);
+      icsLines.push(`DESCRIPTION:Generated dynamically via priority scheduler engine grid allocation.`);
+      icsLines.push("END:VEVENT");
+    });
+  }
+
+  icsLines.push("END:VCALENDAR");
+  const blob = new Blob([icsLines.join("\r\n")], {type: "text/calendar;charset=utf-8"});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `Weekly_Allocation_Schedule_Week_${weekOff}.ics`;
+  link.click();
+}
+
+function renderPriority(){
+  const sorted=[...tasks].filter(t=>t.active&&!t.isReminder).sort((a,b)=>(typeof a.tier==='number'?a.tier:9)-(typeof b.tier==='number'?b.tier:9));
+  document.getElementById('priority-list').innerHTML=sorted.map((t,i)=>{
+    const badgeCls=t.tier===1?'t1':t.tier===2?'t2':t.tier===3?'t3':'t4';
+    const accentVisual = t.customColor ? `border-left: 3px solid ${t.customColor}; padding-left:6px;` : '';
+    return`<div class="priority-item" style="${accentVisual}">
+      <span style="font-size:12px;color:var(--text3);min-width:18px">${i+1}</span>
+      <span style="flex:1;font-size:14px">${t.name}</span>
+      <span class="badge ${badgeCls}">${t.mins}m/day</span>
+    </div>`;
+  }).join('');
+}
+
+function addTask(){
+  const name=document.getElementById('new-name').value.trim();
+  if(!name)return;
+  const tierRaw=document.getElementById('new-tier').value;
+  const tier=tierRaw==='r'?'r':parseInt(tierRaw);
+  const mins=tier==='r'?0:parseInt(document.getElementById('new-mins').value)||30;
+  const days=document.getElementById('new-days').value;
+  const customColor=document.getElementById('new-color').value;
+
+  tasks.push({id:nextId++,name,tier,mins,active:true,days,isReminder:tier==='r',customColor,completedDates:[]});
+  document.getElementById('new-name').value='';
+  save();renderTasks();
+}
+
+function removeTask(id){if(confirm('Remove this task constraint entirely?')){tasks=tasks.filter(t=>t.id!==id);save();renderTasks();}}
+function toggleTaskActiveState(id){const t=tasks.find(x=>x.id===id);if(t){t.active=!t.active;save();renderTasks();generateAndRender();}}
+
+function showTab(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(id==='tasks')renderTasks();
+  if(id==='calendar')generateAndRender();
+}
+
+function changeWeek(d){weekOff+=d;generateAndRender();}
+
+async function callAI(){
+  const prompt=document.getElementById('ai-prompt').value.trim();
+  const btn=document.getElementById('ai-btn');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Evaluation engine running...';
+  const card=document.getElementById('ai-card');
+  const result=document.getElementById('ai-result');
+  card.style.display='block';
+  result.innerHTML='<div class="ai-loading"><div class="spinner"></div> Consolidating operational rules...</div>';
+
+  const taskCtx=[...tasks].filter(t=>t.active).sort((a,b)=>(typeof a.tier==='number'?a.tier:9)-(typeof b.tier==='number'?b.tier:9))
+    .map(t=>`- ${t.name} (${t.tier==='r'?'reminder':('Tier '+t.tier)}, ${t.mins}min/day, ${t.days})`).join('\n');
+
+  const sysPrompt=`You are a smart dashboard schedule strategist helper asset. Context parameters:
+
+ACTIVE ASSIGNED TASKS FOCUS OBJECTS:
+${taskCtx}
+
+DAILY PARAMETER MATRIX WINDOW BOUNDS:
+- Wake target: ${cfg.wake} | Bed target: ${cfg.bed}
+- Protected blocks: Morning Ready (${cfg.readyDur}m), Breakfast (${cfg.breakfastDur}m), Lunch (${cfg.lunchDur}m), Dinner (${cfg.dinnerDur}m).
+
+User special input conditions: "${prompt||'Optimize current parameters uniform distribution.'}"
+
+Output a strategic evaluation overview response under 250 words detailing focus spacing suggestions or action priority tweaks. Use completely raw clean conversational text strings without any structured markdown syntax.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:sysPrompt}]})
+    });
+    const data=await res.json();
+    const text=data.content?.map(c=>c.text||'').join('')||'No evaluation text string returned from engine server connection.';
+    result.textContent=text;
+  }catch(e){
+    result.textContent='Connection fault tracked: '+e.message;
+  }
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-sparkles"></i> Build Recommended Plan Context';
+}
+
+function exportData(){
+  const data={settings:cfg,tasks,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='scheduler-backup-profile.json';a.click();
+}
+
+function resetAll(){
+  localStorage.clear();
+  cfg={...DEFAULT_SETTINGS};
+  tasks=DEFAULT_TASKS.map(t=>({...t}));
+  nextId=20;
+  document.body.removeAttribute('data-theme');
+  applyToUI();renderRoutineWindowsForm();renderTasks();generateAndRender();
+  showToast();
+}
+
+function getTodayTaskTimes(){
+  const di=(new Date().getDay()+6)%7;
+  const blocks=buildDay(di);
+  const map={};
+  blocks.forEach(b=>{if(b.start&&b.end&&b.name)map[b.name]={start:b.start,end:b.end};});
+  return map;
+}
+
+let _notifTimeouts=[];
+
+function updateNotifUI(){
+  if(!('Notification'in window)){
+    const el=document.getElementById('notif-status-pill');
+    if(el){el.className='notif-pill notif-blocked';el.innerHTML='<i class="ti ti-bell-x"></i> Not supported';}
+    const btn=document.getElementById('notif-btn');if(btn)btn.style.display='none';
+    return;
+  }
+  const perm=Notification.permission;
+  const on=cfg.notif&&perm==='granted';
+  const badge=document.getElementById('notif-status-pill');
+  const label=document.getElementById('notif-btn-label');
+  const dot=document.getElementById('notif-dot');
+  const btn=document.getElementById('notif-btn');
+  if(badge){
+    if(on){badge.className='notif-pill notif-on';badge.innerHTML='<i class="ti ti-bell-ringing"></i> On';}
+    else if(perm==='denied'){badge.className='notif-pill notif-blocked';badge.innerHTML='<i class="ti ti-bell-x"></i> Blocked';}
+    else{badge.className='notif-pill notif-off';badge.innerHTML='<i class="ti ti-bell-off"></i> Off';}
+  }
+  if(label)label.textContent=on?'Disable':'Enable';
+  if(btn)btn.disabled=perm==='denied';
+  if(dot)dot.style.display=on?'':'none';
+  const upcoming=document.getElementById('notif-upcoming');
+  if(upcoming&&on){
+    const now=new Date();
+    const di=(now.getDay()+6)%7;
+    const blocks=buildDay(di);
+    const soon=blocks.filter(b=>{
+      if(!b.start)return false;
+      const[h,m]=b.start.split(':').map(Number);
+      const t=new Date(now);t.setHours(h,m,0,0);
+      return t.getTime()-now.getTime()>0;
+    }).slice(0,4);
+    upcoming.style.display='';
+    upcoming.innerHTML=soon.length
+      ?'<strong>Upcoming anchors:</strong> '+soon.map(b=>`${b.name} at ${fmt(b.start)}`).join(' · ')
+      :'No remaining operational items detected on calendar grid today.';
+  }else if(upcoming){upcoming.style.display='none';}
+}
+
+function handleNotifBtn(){
+  if(!('Notification'in window))return;
+  if(cfg.notif&&Notification.permission==='granted'){
+    cfg.notif=false;cancelNotifications();
+    localStorage.setItem('dyn-pr-cfg',JSON.stringify(cfg));
+    updateNotifUI();return;
+  }
+  Notification.requestPermission().then(p=>{
+    cfg.notif=p==='granted';
+    localStorage.setItem('dyn-pr-cfg',JSON.stringify(cfg));
+    updateNotifUI();
+    if(cfg.notif)scheduleNotifications();
+  });
+}
+
+function scheduleNotifications(){
+  cancelNotifications();
+  if(!cfg.notif||!('Notification'in window)||Notification.permission!=='granted')return;
+  const now=new Date();
+  const di=(now.getDay()+6)%7;
+  const blocks=buildDay(di);
+  const advance=(cfg.notifAdvance||10)*60*1000;
+  blocks.forEach(b=>{
+    if(!b.start||!b.end)return;
+    const[h,m]=b.start.split(':').map(Number);
+    const fire=new Date(now);fire.setHours(h,m,0,0);
+    const delay=fire.getTime()-advance-now.getTime();
+    if(delay<0)return;
+    _notifTimeouts.push(setTimeout(()=>{
+      try{new Notification(`⏰ ${b.name} starting soon`,{
+        body:`Scheduled range: ${fmt(b.start)}–${fmt(b.end)}`,
+        tag:'sched-'+b.name
+      });}catch(e){}
+    },delay));
+  });
+}
+
+function cancelNotifications(){
+  _notifTimeouts.forEach(t=>clearTimeout(t));
+  _notifTimeouts=[];
+}
+
+load();generateAndRender();renderTasks();
+if(cfg.notif&&'Notification'in window&&Notification.permission==='granted')scheduleNotifications();
+</script>
+</body>
+</html>
