@@ -6,6 +6,7 @@
 <title>My Daily Scheduler</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#ffffff;--bg2:#f7f7f5;--bg3:#f0efe9;
@@ -22,7 +23,6 @@
   }
 }
 html,body{min-height:100%;background:var(--bg3);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5}
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 .app-shell{max-width:1100px;margin:0 auto;padding:0 16px 60px}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:18px 0 20px;border-bottom:0.5px solid var(--border);margin-bottom:24px}
@@ -309,31 +309,34 @@ const DEFAULT_SETTINGS={
   notif:false,notifAdvance:10
 };
 const DEFAULT_TASKS=[
-  {id:1,name:'Science fair',tier:1,mins:60,active:true,days:[0,1,2,3,4],isReminder:true},
-  {id:2,name:'AMC 10 prep',tier:2,mins:45,active:true,days:[0,1,2,3,4,5,6],isReminder:false},
-  {id:3,name:'USACO practice',tier:3,mins:40,active:true,days:[0,2,4,6],isReminder:false},
-  {id:4,name:'Hindi study',tier:3,mins:30,active:true,days:[0,2,4,6],isReminder:false},
-  {id:5,name:'Free reading / break',tier:4,mins:30,active:true,days:[0,1,2,3,4,5,6],isReminder:false},
-  {id:6,name:'Summer workshop',tier:'r',mins:0,active:true,days:[0,1,2,3,4],isReminder:true},
+  {id:1,name:'Science fair',tier:1,mins:60,active:true,days:'weekdays',isReminder:true},
+  {id:2,name:'AMC 10 prep',tier:2,mins:45,active:true,days:'daily',isReminder:false},
+  {id:3,name:'USACO practice',tier:3,mins:40,active:true,days:'alternate',isReminder:false},
+  {id:4,name:'Hindi study',tier:3,mins:30,active:true,days:'alternate',isReminder:false},
+  {id:5,name:'Free reading / break',tier:4,mins:30,active:true,days:'daily',isReminder:false},
+  {id:6,name:'Summer workshop',tier:'r',mins:0,active:true,days:'weekdays',isReminder:true},
 ];
 
-let cfg={};let tasks=[];let weekOff=0;let nextId=10;let _notifTimeouts=[];
-
-function togglePickerDay(btn) {
-  btn.classList.toggle('selected');
-}
-
-function getSelectedPickerDays() {
-  const btns = document.querySelectorAll('#new-days-picker .day-picker-btn.selected');
-  return Array.from(btns).map(b => parseInt(b.getAttribute('data-day')));
-}
+let cfg={};let tasks=[];let weekOff=0;let nextId=10;
 
 function load(){
-  try{cfg=JSON.parse(localStorage.getItem('sched-cfg'))||{...DEFAULT_SETTINGS};}catch{cfg={...DEFAULT_SETTINGS};}
-  try{tasks=JSON.parse(localStorage.getItem('sched-tasks'))||DEFAULT_TASKS.map(t=>({...t}));}catch{tasks=DEFAULT_TASKS.map(t=>({...t}));}
+  // FIX: Safely merge loaded data with defaults to protect against missing keys
+  try {
+    const savedCfg = JSON.parse(localStorage.getItem('sched-cfg'));
+    cfg = Object.assign({...DEFAULT_SETTINGS}, savedCfg || {});
+  } catch {
+    cfg = {...DEFAULT_SETTINGS};
+  }
+  
+  try {
+    const savedTasks = JSON.parse(localStorage.getItem('sched-tasks'));
+    tasks = savedTasks || DEFAULT_TASKS.map(t=>({...t}));
+  } catch {
+    tasks = DEFAULT_TASKS.map(t=>({...t}));
+  }
+  
   try{nextId=JSON.parse(localStorage.getItem('sched-nid'))||10;}catch{nextId=10;}
   applyToUI();
-  generateAndRender();
 }
 function save(){
   readFromUI();
@@ -379,8 +382,8 @@ function applyToUI(){
 
 // Utility
 function fmt(t){if(!t)return'';const[h,m]=t.split(':').map(Number);const ap=h>=12?'PM':'AM';const h12=h%12||12;return m===0?`${h12}${ap}`:`${h12}:${String(m).padStart(2,'0')}${ap}`;}
-function addM(t,m){const[h,mm]=t.split(':').map(Number);const tot=h*60+mm+m;return`${String(Math.floor(tot/60)%24).padStart(2,'0')}:${String(tot%60).padStart(2,'0')}`;}
-function toMins(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
+function addM(t,m){if(!t) return '00:00'; const[h,mm]=t.split(':').map(Number);const tot=h*60+mm+m;return`${String(Math.floor(tot/60)%24).padStart(2,'0')}:${String(tot%60).padStart(2,'0')}`;}
+function toMins(t){if(!t) return 0; const[h,m]=t.split(':').map(Number);return h*60+m;}
 function mh(m){return m>=60?`${Math.round(m/60*10)/10}h`:`${m}m`;}
 
 const COLORS={
@@ -419,20 +422,14 @@ function buildDay(di){
   let studyStart=isWeekend?addM(cfg.wake,100):(cfg.school?addM('15:00',15):addM(cfg.wake,30));
   let studyEnd=soccerEve?(isThu?'17:30':'17:00'):addM(cfg.bed,-45);
 
-  // Sort active non-reminder tasks by tier
   const studyTasks=tasks.filter(t=>t.active&&t.isReminder===false&&!(t.id===4&&!cfg.hindi));
   const sorted=[...studyTasks].sort((a,b)=>(typeof a.tier==='number'?a.tier:9)-(typeof b.tier==='number'?b.tier:9));
   let cur=studyStart;
 
   for(const t of sorted){
-    if(Array.isArray(t.days)) {
-      if(!t.days.includes(di)) continue;
-    } else {
-      if(t.days==='weekdays'&&isWeekend)continue;
-      if(t.days==='weekends'&&!isWeekend)continue;
-      if(t.days==='alternate'&&di%2===1)continue;
-    }
-    
+    if(t.days==='weekdays'&&isWeekend)continue;
+    if(t.days==='weekends'&&!isWeekend)continue;
+    if(t.days==='alternate'&&di%2===1)continue;
     const endT=addM(cur,t.mins);
     if(toMins(endT)>toMins(studyEnd)) break;
     blocks.push(block(t.name,cur,endT,t.tier));
@@ -448,16 +445,6 @@ function buildDay(di){
   return blocks;
 }
 
-function getTodayTaskTimes() {
-  const currentDayIndex = (new Date().getDay() + 6) % 7;
-  const systemBlocks = buildDay(currentDayIndex);
-  const mapping = {};
-  systemBlocks.forEach(b => {
-    if(b.start && b.end) mapping[b.name] = { start: b.start, end: b.end };
-  });
-  return mapping;
-}
-
 function blockEl(b){
   const col=COLORS[b.type]||COLORS[4];
   const isReminder=b.note&&b.note.includes('📌');
@@ -469,6 +456,7 @@ function blockEl(b){
 
 function generateAndRender(){
   const grid=document.getElementById('week-grid');
+  if(!grid) return;
   grid.innerHTML='';
   const now=new Date();
   const mon=new Date(now);
@@ -499,23 +487,17 @@ function renderLegend(){
     {n:'School',t:'school'},{n:'Soccer',t:'soccer'},
     {n:'Tier 1',t:1},{n:'Tier 2',t:2},{n:'Tier 3',t:3},{n:'Reminder',t:'r'},
   ];
-  document.getElementById('legend').innerHTML=items.map(it=>{
+  const leg = document.getElementById('legend');
+  if(!leg) return;
+  leg.innerHTML=items.map(it=>{
     const c=COLORS[it.t]||COLORS[4];
     return`<span class="legend-dot" style="background:${c.bg};color:${c.c};border:0.5px solid ${c.border}40">${it.n}</span>`;
   }).join('');
 }
 
-function formatDaysDisplay(days) {
-  if (!Array.isArray(days)) return days;
-  const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  if (days.length === 7) return 'Every day';
-  if (days.length === 5 && !days.includes(5) && !days.includes(6)) return 'Weekdays';
-  if (days.length === 2 && days.includes(5) && days.includes(6)) return 'Weekends';
-  return days.map(d => labels[d]).join(', ');
-}
-
 function renderTasks(){
   const list=document.getElementById('task-list');
+  if(!list) return;
   const todayTimes=getTodayTaskTimes();
   list.innerHTML=tasks.map(t=>{
     const col=COLORS[t.tier]||COLORS[4];
@@ -532,7 +514,7 @@ function renderTasks(){
           ${schedHtml}
           <span class="badge ${badgeCls}">${tierLabel}</span>
           ${t.mins>0?`<span style="font-size:11px;color:var(--text2)">${t.mins}min/day</span>`:''}
-          <span style="font-size:11px;color:var(--text2)">${formatDaysDisplay(t.days)}</span>
+          <span style="font-size:11px;color:var(--text2)">${t.days}</span>
         </div>
       </div>
       <label class="toggle"><input type="checkbox" ${t.active?'checked':''} onchange="toggleTask(${t.id})"><span class="slider"></span></label>
@@ -548,8 +530,10 @@ function renderTasks(){
 }
 
 function renderPriority(){
+  const pList = document.getElementById('priority-list');
+  if(!pList) return;
   const sorted=[...tasks].filter(t=>t.active&&!t.isReminder).sort((a,b)=>(typeof a.tier==='number'?a.tier:9)-(typeof b.tier==='number'?b.tier:9));
-  document.getElementById('priority-list').innerHTML=sorted.map((t,i)=>{
+  pList.innerHTML=sorted.map((t,i)=>{
     const badgeCls=t.tier===1?'t1':t.tier===2?'t2':t.tier===3?'t3':'t4';
     return`<div class="priority-item">
       <span class="drag-handle"><i class="ti ti-grip-vertical"></i></span>
@@ -566,14 +550,8 @@ function addTask(){
   const tierRaw=document.getElementById('new-tier').value;
   const tier=tierRaw==='r'?'r':parseInt(tierRaw);
   const mins=tier==='r'?0:parseInt(document.getElementById('new-mins').value)||30;
-  
-  const pickedDays = getSelectedPickerDays();
-  if (pickedDays.length === 0) {
-    alert('Please pick at least one day for this task layout block!');
-    return;
-  }
-
-  tasks.push({id:nextId++,name,tier,mins,active:true,days:pickedDays,isReminder:tier==='r'});
+  const days=document.getElementById('new-days').value;
+  tasks.push({id:nextId++,name,tier,mins,active:true,days,isReminder:tier==='r'});
   document.getElementById('new-name').value='';
   save();renderTasks();
 }
@@ -591,34 +569,112 @@ function showTab(id,btn){
 
 function changeWeek(d){weekOff+=d;generateAndRender();}
 
-function updateNotifUI(){
-  const statusPill=document.getElementById('notif-status-pill');
-  const btnLabel=document.getElementById('notif-btn-label');
-  const dot=document.getElementById('notif-dot');
-  const upcoming=document.getElementById('notif-upcoming');
-  if(!('Notification'in window)){
-    statusPill.className='notif-pill notif-blocked';statusPill.innerHTML='<i class="ti ti-bell-off"></i> Unsupported';
-    dot.style.display='none';upcoming.style.display='none';return;
+async function callAI(){
+  const prompt=document.getElementById('ai-prompt').value.trim();
+  const btn=document.getElementById('ai-btn');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Thinking...';
+  const card=document.getElementById('ai-card');
+  const result=document.getElementById('ai-result');
+  card.style.display='block';
+  result.innerHTML='<div class="ai-loading"><div class="spinner"></div> Generating your plan...</div>';
+
+  const taskCtx=[...tasks].filter(t=>t.active).sort((a,b)=>(typeof a.tier==='number'?a.tier:9)-(typeof b.tier==='number'?b.tier:9))
+    .map(t=>`- ${t.name} (${t.tier==='r'?'reminder':('Tier '+t.tier)}, ${t.mins}min/day, ${t.days})`).join('\n');
+
+  const sysPrompt=`You are a smart schedule assistant for a student. Their setup:
+
+TASKS (by priority):
+${taskCtx}
+
+FIXED SCHEDULE:
+- Weekdays: wake ${cfg.wake}, ${cfg.school?`school 6:45am–3pm`:'school is OFF for the year'}
+- Mon/Wed soccer: 5:45–9pm | Thu soccer: 6–7pm | Sat soccer: ${cfg.satS}–${cfg.satE}
+- Bedtime: ${cfg.bed}
+- Science fair + Summer workshop = community class reminders, no daily work needed
+- Hindi + USACO = same priority tier, alternate days
+
+User note: "${prompt||'No special notes.'}"
+
+Write a clear, friendly weekly schedule plan (max 250 words). Be specific: name which tasks go on which days, suggest exact time windows, and give 1-2 actionable tips. Use plain text, no markdown.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:sysPrompt}]})
+    });
+    const data=await res.json();
+    const text=data.content?.map(c=>c.text||'').join('')||'No response received.';
+    result.textContent=text;
+  }catch(e){
+    result.textContent='Something went wrong: '+e.message;
   }
-  if(Notification.permission==='denied'){
-    statusPill.className='notif-pill notif-blocked';statusPill.innerHTML='<i class="ti ti-lock"></i> Blocked';
-    btnLabel.textContent='Blocked';dot.style.display='none';upcoming.style.display='none';return;
-  }
-  if(cfg.notif&&Notification.permission==='granted'){
-    statusPill.className='notif-pill notif-on';statusPill.innerHTML='<i class="ti ti-bell"></i> Active';
-    btnLabel.textContent='Disable';dot.style.display='inline';
-    const now=new Date();const blocks=buildDay((now.getDay()+6)%7).filter(b=>b.start);
-    if(blocks.length){
-      upcoming.style.display='block';
-      upcoming.innerHTML=`<b>Active alerts for today:</b><br>`+blocks.map(b=>`• ${b.name} (${fmt(b.start)})`).join('<br>');
-    }else{upcoming.style.display='none';}
-  }else{
-    statusPill.className='notif-pill notif-off';statusPill.innerHTML='<i class="ti ti-bell-off"></i> Off';
-    btnLabel.textContent='Enable';dot.style.display='none';upcoming.style.display='none';
-  }
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-sparkles"></i> Generate plan';
 }
 
-function cancelNotifications(){_notifTimeouts.forEach(clearTimeout);_notifTimeouts=[];}
+function exportData(){
+  const data={settings:cfg,tasks,exportedAt:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my-schedule.json';a.click();
+}
+
+function resetAll(){
+  localStorage.clear();
+  cfg={...DEFAULT_SETTINGS};
+  tasks=DEFAULT_TASKS.map(t=>({...t}));
+  nextId=10;
+  applyToUI();renderTasks();generateAndRender();
+  showToast();
+}
+
+function getTodayTaskTimes(){
+  const di=(new Date().getDay()+6)%7;
+  const blocks=buildDay(di);
+  const map={};
+  blocks.forEach(b=>{if(b.start&&b.end&&b.name)map[b.name]={start:b.start,end:b.end};});
+  return map;
+}
+
+let _notifTimeouts=[];
+
+function updateNotifUI(){
+  if(!('Notification'in window)){
+    const el=document.getElementById('notif-status-pill');
+    if(el){el.className='notif-pill notif-blocked';el.innerHTML='<i class="ti ti-bell-x"></i> Not supported';}
+    const btn=document.getElementById('notif-btn');if(btn)btn.style.display='none';
+    return;
+  }
+  const perm=Notification.permission;
+  const on=cfg.notif&&perm==='granted';
+  const badge=document.getElementById('notif-status-pill');
+  const label=document.getElementById('notif-btn-label');
+  const dot=document.getElementById('notif-dot');
+  const btn=document.getElementById('notif-btn');
+  if(badge){
+    if(on){badge.className='notif-pill notif-on';badge.innerHTML='<i class="ti ti-bell-ringing"></i> On';}
+    else if(perm==='denied'){badge.className='notif-pill notif-blocked';badge.innerHTML='<i class="ti ti-bell-x"></i> Blocked';}
+    else{badge.className='notif-pill notif-off';badge.innerHTML='<i class="ti ti-bell-off"></i> Off';}
+  }
+  if(label)label.textContent=on?'Disable':'Enable';
+  if(btn)btn.disabled=perm==='denied';
+  if(dot)dot.style.display=on?'':'none';
+  const upcoming=document.getElementById('notif-upcoming');
+  if(upcoming&&on){
+    const now=new Date();
+    const di=(now.getDay()+6)%7;
+    const blocks=buildDay(di);
+    const soon=blocks.filter(b=>{
+      if(!b.start)return false;
+      const[h,m]=b.start.split(':').map(Number);
+      const t=new Date(now);t.setHours(h,m,0,0);
+      return t.getTime()-now.getTime()>0;
+    }).slice(0,4);
+    upcoming.style.display='';
+    upcoming.innerHTML=soon.length
+      ?'<strong>Upcoming today:</strong> '+soon.map(b=>`${b.name} at ${fmt(b.start)}`).join(' · ')
+      :'No more tasks scheduled for today.';
+  }else if(upcoming){upcoming.style.display='none';}
+}
 
 function handleNotifBtn(){
   if(!('Notification'in window))return;
@@ -627,7 +683,8 @@ function handleNotifBtn(){
     localStorage.setItem('sched-cfg',JSON.stringify(cfg));
     updateNotifUI();return;
   }
-  Notification.requestPermission().then(p=>{\n    cfg.notif=p==='granted';
+  Notification.requestPermission().then(p=>{
+    cfg.notif=p==='granted';
     localStorage.setItem('sched-cfg',JSON.stringify(cfg));
     updateNotifUI();
     if(cfg.notif)scheduleNotifications();
@@ -641,61 +698,29 @@ function scheduleNotifications(){
   const di=(now.getDay()+6)%7;
   const blocks=buildDay(di);
   const advance=(cfg.notifAdvance||10)*60*1000;
-  blocks.forEach(b=>{\n    if(!b.start||!b.end)return;
+  blocks.forEach(b=>{
+    if(!b.start||!b.end)return;
     const[h,m]=b.start.split(':').map(Number);
     const fire=new Date(now);fire.setHours(h,m,0,0);
     const delay=fire.getTime()-advance-now.getTime();
     if(delay<0)return;
     _notifTimeouts.push(setTimeout(()=>{
-      try{new Notification(`⏰ ${b.name} in ${cfg.notifAdvance||10} min`,{\n        body:`Starts at ${fmt(b.start)}–${fmt(b.end)}`,\n        tag:'sched-'+b.name\n      });}catch(e){}
+      try{new Notification(`⏰ ${b.name} in ${cfg.notifAdvance||10} min`,{
+        body:`Starts at ${fmt(b.start)}–${fmt(b.end)}`,
+        tag:'sched-'+b.name
+      });}catch(e){}
     },delay));
   });
 }
 
-function exportData(){
-  const out={cfg,tasks,nid:nextId};
-  const str='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(out));
-  const a=document.createElement('a');a.setAttribute('href',str);
-  a.setAttribute('download','myschedule_backup.json');a.click();
+function cancelNotifications(){
+  _notifTimeouts.forEach(t=>clearTimeout(t));
+  _notifTimeouts=[];
 }
 
-function resetAll(){
-  localStorage.clear();cfg={...DEFAULT_SETTINGS};tasks=DEFAULT_TASKS.map(t=>({...t}));nextId=10;
-  applyToUI();generateAndRender();if(document.getElementById('tab-tasks').classList.contains('active'))renderTasks();
-}
-
-async function callAI(){
-  const prompt=document.getElementById('ai-prompt').value.trim();
-  const btn=document.getElementById('ai-btn');
-  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Thinking...';
-  const card=document.getElementById('ai-card');
-  const result=document.getElementById('ai-result');
-  card.style.display='block';
-  result.innerHTML='<div class="ai-loading"><div class="spinner"></div> Generating your plan...</div>';
-
-  const taskCtx=[...tasks].filter(t=>t.active).sort((a,b)=>(typeof a.tier==='number'?a.tier:9)-(typeof b.tier==='number'?b.tier:9))
-    .map(t=>`- ${t.name} (${t.tier==='r'?'reminder':('Tier '+t.tier)}, ${t.mins}min/day, Days: ${formatDaysDisplay(t.days)})`).join('\n');
-
-  // Client-side execution sandbox fallback for premium automated schedule tuning engine
-  setTimeout(()=>{
-    let out=`✨ <b>AI Personalized Strategic Study Blueprint</b> ✨\n\n`;
-    if(prompt.toLowerCase().includes('amc')||prompt.toLowerCase().includes('usaco')||prompt.toLowerCase().includes('hindi')){
-      out+=`⚡ <b>Tactical Summary based on your input:</b>\n`;
-      if(prompt.toLowerCase().includes('amc')) out+=`• <b>AMC 10 Target:</b> Your mock test is Saturday. Priority focus allocated on Monday-Friday directly after school window to capture high energy blocks.\n`;
-      if(prompt.toLowerCase().includes('usaco')) out+=`• <b>USACO Acceleration:</b> Optimized Tier 3 scheduling on alternate days (Mon/Wed/Fri/Sun) to enforce deep coding sessions without soccer collision.\n`;
-      if(prompt.toLowerCase().includes('hindi')) out+=`• <b>Hindi Consistency Check:</b> Running steady 30-minute blocks to build micro-habits without causing target fatigue.\n\n`;
-    }
-    out+=`📆 <b>Weekly Distribution Adjustments:</b>\n`;
-    out+=`• <b>High Energy Core (Tier 1 & 2):</b> Positioned explicitly at 3:15 PM on weekdays. Enforces 45-60m structured progress before evening practices.\n`;
-    out+=`• <b>Soccer Collision Safe Zones:</b> On Mon/Wed, deep conceptual work finishes before 5:45 PM. Wind-down blocks from 9:50 PM focus strictly on recovery and light reading.\n\n`;
-    out+=`💡 <b>Pro-Tip for this Week:</b> Use the active Browser Task Reminders to sound alerts 10 minutes prior to shifting out of your afternoon focus states!`;
-    
-    result.innerHTML=out;
-    btn.disabled=false;btn.innerHTML='<i class="ti ti-sparkles"></i> Generate plan';
-  },1400);
-}
-
-window.onload=load;
+load();generateAndRender();
+updateNotifUI();
+if(cfg.notif&&'Notification'in window&&Notification.permission==='granted')scheduleNotifications();
 </script>
 </body>
 </html>
