@@ -98,7 +98,7 @@ input:checked+.slider:before{transform:translateX(18px)}
 .block{border-radius:7px;padding:8px 10px;font-size:12px;line-height:1.4;border-left:3px solid transparent;box-shadow:0 1px 2px rgba(0,0,0,0.02);transition:transform 0.15s}
 .block:hover{transform:translateY(-1px);box-shadow:0 2px 5px rgba(0,0,0,0.05)}
 .block-name{font-weight:600;display:block}
-.block-time{font-size:10.5px;color:inherit;opacity:0.85;display:block;margin-top:2px;font-weight:500}
+.block-time{font-size:10.5px;opacity:0.85;display:block;margin-top:2px;font-weight:600}
 .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .legend-dot{font-size:11px;padding:4px 12px;border-radius:999px;font-weight:600}
 
@@ -208,15 +208,20 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
           </select>
         </div>
         <div style="max-width:110px"><div class="field-label">Duration (Min)</div><input type="number" id="new-mins" value="45" min="5" max="360"/></div>
-        <div><div class="field-label">Cadence</div>
-          <select id="new-days">
-            <option value="daily">Every day</option>
-            <option value="weekdays">Weekdays only</option>
-            <option value="alternate">Alternate days</option>
-            <option value="weekends">Weekends only</option>
-          </select>
+        
+        <div style="min-width:240px"><div class="field-label">Active Days</div>
+          <div style="display:flex; gap:6px; background:var(--bg2); padding:6px; border-radius:var(--radius); border:1px solid var(--border2);" id="new-task-days">
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="0" checked> M</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="1" checked> T</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="2" checked> W</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="3" checked> T</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="4" checked> F</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="5"> S</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="6"> S</label>
+          </div>
         </div>
-        <button class="btn btn-primary" onclick="()"><i class="ti ti-plus"></i> Inject</button>
+
+        <button class="btn btn-primary" onclick="addTask()"><i class="ti ti-plus"></i> Inject</button>
       </div>
     </div>
   </div>
@@ -264,13 +269,13 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
 <div style="margin-bottom: 14px;">
   <div class="field-label">Active Shift Days</div>
   <div style="display:flex; gap:8px; flex-wrap:wrap;" id="shift-days-container">
-    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="0" onchange="save()"> Mon</label>
-    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="1" onchange="save()"> Tue</label>
-    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="2" onchange="save()"> Wed</label>
-    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="3" onchange="save()"> Thu</label>
-    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="4" onchange="save()"> Fri</label>
-    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="5" onchange="save()"> Sat</label>
-    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="6" onchange="save()"> Sun</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="0" onchange="save()"> Mon</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="1" onchange="save()"> Tue</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="2" onchange="save()"> Wed</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="3" onchange="save()"> Thu</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="4" onchange="save()"> Fri</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="5" onchange="save()"> Sat</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="6" onchange="save()"> Sun</label>
   </div>
 </div>
       <div class="grid3">
@@ -339,11 +344,11 @@ const DEFAULT_SETTINGS={
 };
 
 const DEFAULT_TASKS=[
-  {id:1,name:'Priority Deep Work Sprint',tier:1,mins:60,active:true,days:'weekdays',isReminder:false},
-  {id:2,name:'Technical Revision Slot',tier:2,mins:45,active:true,days:'daily',isReminder:false},
-  {id:3,name:'Creative & Open Research',tier:3,mins:45,active:true,days:'alternate',isReminder:false},
-  {id:4,name:'Administrative & Email Cleanout',tier:4,mins:30,active:true,days:'daily',isReminder:false},
-  {id:5,name:'Weekly Strategic Horizon Audit',tier:'r',mins:0,active:true,days:'weekends',isReminder:true}
+  {id:1,name:'Priority Deep Work Sprint',tier:1,mins:60,active:true,days:[0,1,2,3,4],isReminder:false},
+  {id:2,name:'Technical Revision Slot',tier:2,mins:45,active:true,days:[0,1,2,3,4,5,6],isReminder:false},
+  {id:3,name:'Creative & Open Research',tier:3,mins:45,active:true,days:[0,2,4],isReminder:false},
+  {id:4,name:'Administrative & Email Cleanout',tier:4,mins:30,active:true,days:[0,1,2,3,4,5,6],isReminder:false},
+  {id:5,name:'Weekly Strategic Horizon Audit',tier:'r',mins:0,active:true,days:[5,6],isReminder:true}
 ];
 
 let cfg={};let tasks=[];let weekOff=0;let nextId=10;
@@ -418,7 +423,7 @@ function applyToUI(){
   document.getElementById('t-dinner-s').value=cfg.dinnerS||'18:30';
   document.getElementById('t-dinner-d').value=cfg.dinnerD??45;
   document.getElementById('notif-advance').value=cfg.notifAdvance||10;
-  const sDays = cfg.shiftDays || [0,1,2,3,4]; // fallback to weekdays if blank
+  const sDays = cfg.shiftDays || [0,1,2,3,4]; 
   document.querySelectorAll('.shift-day-chk').forEach(c => {
     c.checked = sDays.includes(parseInt(c.value));
   });
@@ -509,9 +514,8 @@ function buildDay(di){
   const bufferGap = cfg.breakMins;
 
  for(const task of dayTasks) {
-    // If customized days array exists, ensure it includes today's index (0=Mon, 6=Sun)
     if(Array.isArray(task.days) && !task.days.includes(di)) continue;
-    // Legacy support fallback compatibility check
+    
     if(typeof task.days === 'string') {
       if(task.days==='weekdays' && isWeekend) continue;
       if(task.days==='weekends' && !isWeekend) continue;
@@ -534,8 +538,11 @@ function buildDay(di){
   }
 
   tasks.filter(t => t.active && t.isReminder).forEach(r => {
-    if(r.days==='weekdays' && isWeekend) return;
-    if(r.days==='weekends' && !isWeekend) return;
+    if(Array.isArray(r.days) && !r.days.includes(di)) return;
+    if(typeof r.days === 'string') {
+      if(r.days==='weekdays' && isWeekend) return;
+      if(r.days==='weekends' && !isWeekend) return;
+    }
     timelineBlocks.push({name: r.name, start: '', end: '', type: 'r', note: '📌'});
   });
 
@@ -549,7 +556,7 @@ function blockEl(b){
   const col=COLORS[b.type]||COLORS[4];
   return`<div class="block" style="background:${col.bg};border-left-color:${col.border};color:${col.c}">
     <span class="block-name">${b.name}${b.note?' 📌':''}</span>
-    ${b.start?`<span class="block-time">${fmt(b.start)}${b.end?' – '+fmt(b.end):''}</span>`:''}
+    ${b.start?`<span class="block-time" style="color:${col.c}">${fmt(b.start)}${b.end?' – '+fmt(b.end):''}</span>`:''}
   </div>`;
 }
 
@@ -670,8 +677,8 @@ function addTask(){
   const tier=tierRaw==='r'?'r':parseInt(tierRaw);
   const mins=tier==='r'?0:parseInt(document.getElementById('new-mins').value)||30;
   
-  // FIXED: Read directly from the dropdown selection ('daily', 'weekdays', etc.)
-  const cadenceSelection = document.getElementById('new-days').value; 
+  const days = Array.from(document.querySelectorAll('#new-task-days input')).filter(c=>c.checked).map(c=>parseInt(c.value));
+  if(days.length === 0) { alert('Please select at least one active day.'); return; }
   
   tasks.push({
     id: nextId++,
@@ -679,7 +686,7 @@ function addTask(){
     tier: tier,
     mins: mins,
     active: true,
-    days: cadenceSelection, 
+    days: days, 
     isReminder: tier==='r'
   });
   
@@ -707,6 +714,9 @@ async function callAI(){
   const btn=document.getElementById('ai-btn'); btn.disabled=true; btn.innerHTML='Thinking...';
   const card=document.getElementById('ai-card'); const result=document.getElementById('ai-result');
   card.style.display='block'; result.innerHTML='<div class="ai-loading">Evaluating timeline arrays...</div>';
+
+  const taskCtx=[...tasks].filter(t=>t.active).sort((a,b)=>(typeof a.tier==='number'?a.tier:9)-(typeof b.tier==='number'?b.tier:9))
+    .map(t=>`- ${t.name} (${t.tier==='r'?'reminder':('Tier '+t.tier)}, ${t.mins}min/day, Days: ${Array.isArray(t.days) ? t.days.map(d => ['M','T','W','Th','F','Sa','Su'][d]).join(',') : t.days})`).join('\n');
 
   setTimeout(() => {
     result.textContent = `USER STRATEGIC OPTIMIZATION BLUEPRINT GENERATED
