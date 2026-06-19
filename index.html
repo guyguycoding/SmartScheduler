@@ -216,7 +216,7 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
             <option value="weekends">Weekends only</option>
           </select>
         </div>
-        <button class="btn btn-primary" onclick="addTask()"><i class="ti ti-plus"></i> Inject</button>
+        <button class="btn btn-primary" onclick="()"><i class="ti ti-plus"></i> Inject</button>
       </div>
     </div>
   </div>
@@ -669,7 +669,10 @@ function addTask(){
   const tierRaw=document.getElementById('new-tier').value;
   const tier=tierRaw==='r'?'r':parseInt(tierRaw);
   const mins=tier==='r'?0:parseInt(document.getElementById('new-mins').value)||30;
-  const days=Array.from(document.querySelectorAll('#new-task-days input')).filter(c=>c.checked).map(c=>parseInt(c.value));
+  
+  // FIX: Read directly from the dropdown selection instead of trying to look for non-existent checkboxes
+  const days=document.getElementById('new-days').value; 
+  
   tasks.push({id:nextId++,name,tier,mins,active:true,days,isReminder:tier==='r'});
   document.getElementById('new-name').value='';
   save(); renderTasks(); generateAndRender();
