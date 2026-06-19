@@ -399,6 +399,7 @@ function readFromUI(){
   cfg.dinnerS=document.getElementById('t-dinner-s').value||cfg.dinnerS;
   cfg.dinnerD=parseInt(document.getElementById('t-dinner-d').value)||0;
   cfg.notifAdvance=parseInt(document.getElementById('notif-advance').value)||10;
+  cfg.shiftDays = Array.from(document.querySelectorAll('.shift-day-chk')).filter(c => c.checked).map(c => parseInt(c.value));
 }
 
 function applyToUI(){
@@ -417,6 +418,10 @@ function applyToUI(){
   document.getElementById('t-dinner-s').value=cfg.dinnerS||'18:30';
   document.getElementById('t-dinner-d').value=cfg.dinnerD??45;
   document.getElementById('notif-advance').value=cfg.notifAdvance||10;
+  const sDays = cfg.shiftDays || [0,1,2,3,4]; // fallback to weekdays if blank
+  document.querySelectorAll('.shift-day-chk').forEach(c => {
+    c.checked = sDays.includes(parseInt(c.value));
+  });
   updateNotifUI();
 }
 
@@ -472,7 +477,8 @@ function buildDay(di){
   if(cfg.lunchD > 0) { const ls = toMins(cfg.lunchS); rawFixedBlocks.push({name:'Lunch Window', s: ls, e: ls + cfg.lunchD, type:'routine'}); }
   if(cfg.dinnerD > 0) { const ds = toMins(cfg.dinnerS); rawFixedBlocks.push({name:'Dinner Window', s: ds, e: ds + cfg.dinnerD, type:'routine'}); }
 
-  if(cfg.school && !isWeekend) {
+  const sDays = cfg.shiftDays || [0,1,2,3,4];
+  if(cfg.school && sDays.includes(di)) {
     const ss = toMins(cfg.leave); const se = toMins(cfg.home);
     if(se > ss) rawFixedBlocks.push({name: cfg.shiftLbl, s: ss, e: se, type: 'fixed'});
   }
@@ -502,10 +508,15 @@ function buildDay(di){
   let currentPointer = wakeM;
   const bufferGap = cfg.breakMins;
 
-  for(const task of dayTasks) {
-    if(task.days==='weekdays' && isWeekend) continue;
-    if(task.days==='weekends' && !isWeekend) continue;
-    if(task.days==='alternate' && di%2===1) continue;
+ for(const task of dayTasks) {
+    // If customized days array exists, ensure it includes today's index (0=Mon, 6=Sun)
+    if(Array.isArray(task.days) && !task.days.includes(di)) continue;
+    // Legacy support fallback compatibility check
+    if(typeof task.days === 'string') {
+      if(task.days==='weekdays' && isWeekend) continue;
+      if(task.days==='weekends' && !isWeekend) continue;
+      if(task.days==='alternate' && di%2===1) continue;
+    }
 
     let placed = false;
     while(!placed && currentPointer < bedM) {
@@ -594,7 +605,10 @@ function renderTasks(){
           ${schedHtml}
           <span class="badge ${badgeCls}">${label}</span>
           ${t.mins>0?`<span style="font-size:11px;color:var(--text2)">${t.mins} min commitment</span>`:''}
-          <span style="font-size:11px;color:var(--text2);text-transform:capitalize"><i class="ti ti-calendar-repeat"></i> ${t.days}</span>
+          <span style="font-size:11px;color:var(--text2);text-transform:capitalize">
+  <i class="ti ti-calendar-repeat"></i> 
+  ${Array.isArray(t.days) ? t.days.map(d => ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d]).join(', ') : t.days}
+</span>
         </div>
       </div>
       <label class="toggle"><input type="checkbox" ${t.active?'checked':''} onchange="toggleTask(${t.id})"><span class="slider"></span></label>
@@ -655,7 +669,7 @@ function addTask(){
   const tierRaw=document.getElementById('new-tier').value;
   const tier=tierRaw==='r'?'r':parseInt(tierRaw);
   const mins=tier==='r'?0:parseInt(document.getElementById('new-mins').value)||30;
-  const days=document.getElementById('new-days').value;
+  const days=Array.from(document.querySelectorAll('#new-task-days input')).filter(c=>c.checked).map(c=>parseInt(c.value));
   tasks.push({id:nextId++,name,tier,mins,active:true,days,isReminder:tier==='r'});
   document.getElementById('new-name').value='';
   save(); renderTasks(); generateAndRender();
