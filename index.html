@@ -670,12 +670,23 @@ function addTask(){
   const tier=tierRaw==='r'?'r':parseInt(tierRaw);
   const mins=tier==='r'?0:parseInt(document.getElementById('new-mins').value)||30;
   
-  // FIX: Read directly from the dropdown selection instead of trying to look for non-existent checkboxes
-  const days=document.getElementById('new-days').value; 
+  // FIXED: Read directly from the dropdown selection ('daily', 'weekdays', etc.)
+  const cadenceSelection = document.getElementById('new-days').value; 
   
-  tasks.push({id:nextId++,name,tier,mins,active:true,days,isReminder:tier==='r'});
+  tasks.push({
+    id: nextId++,
+    name: name,
+    tier: tier,
+    mins: mins,
+    active: true,
+    days: cadenceSelection, 
+    isReminder: tier==='r'
+  });
+  
   document.getElementById('new-name').value='';
-  save(); renderTasks(); generateAndRender();
+  save(); 
+  renderTasks(); 
+  generateAndRender();
 }
 function removeTask(id){ if(confirm('Delete this task structural assignment?')){ tasks=tasks.filter(t=>t.id!==id); save(); renderTasks(); generateAndRender(); } }
 function toggleTask(id){ const t=tasks.find(x=>x.id===id); if(t){ t.active=!t.active; save(); renderTasks(); generateAndRender(); } }
