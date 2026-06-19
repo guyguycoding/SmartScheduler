@@ -510,10 +510,14 @@ function buildDay(di){
   }
 
   const dayTasks=tasks.filter(t => t.active && !t.isReminder);
-  let currentPointer = wakeM;
+  
+  // CRITICAL FEATURE FIX: Force timeline calculation engine to evaluate tasks strictly AFTER breakfast ends
+  const bfastEnd = toMins(cfg.bfastS) + cfg.bfastD;
+  let currentPointer = Math.max(wakeM, bfastEnd);
+  
   const bufferGap = cfg.breakMins;
 
- for(const task of dayTasks) {
+  for(const task of dayTasks) {
     if(Array.isArray(task.days) && !task.days.includes(di)) continue;
     
     if(typeof task.days === 'string') {
@@ -783,7 +787,7 @@ function scheduleNotifications(){
   blocks.forEach(b=>{
     if(!b.start||!b.end)return; const[h,m]=b.start.split(':').map(Number); const fire=new Date(now);fire.setHours(h,m,0,0);
     const delay=fire.getTime()-advance-now.getTime(); if(delay<0)return;
-    _notifTimeouts.push(setTimeout(()=>{ try{new Notification(`⏰ Scheduled Block Approaching`,{body:`"${b.name}" begins at ${fmt(b.start)}`});}catch(e){} },delay));
+    _notifTimeouts.push(setTimeout(()=>{ try{new Notification(`⏰ Scheduled Block Approaching`,{body:`\"${b.name}\" begins at ${fmt(b.start)}`});}catch(e){} },delay));
   });
 }
 function cancelNotifications(){ _notifTimeouts.forEach(t=>clearTimeout(t)); _notifTimeouts=[]; }
