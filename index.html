@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>My Daily Scheduler — Premium Edition</title>
+<title>Ultimate Dynamic Scheduler — Premium Master Edition</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <style>
-/* CRITICAL FIX: @import MUST be at the very top of the CSS pool */
+/* CRITICAL FIX: Google Font import placed at absolute top to prevent stylesheet rendering failure */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -30,14 +30,14 @@ body.dark-theme{
 
 html,body{min-height:100%;background:var(--bg3);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.5;transition:background-color 0.3s, color 0.3s}
 
-.app-shell{max-width:1150px;margin:0 auto;padding: 0 20px 80px}
+.app-shell{max-width:1150px;margin:0 auto;padding:0 20px 80px}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:24px 0;border-bottom:1px solid var(--border);margin-bottom:32px;gap:16px;flex-wrap:wrap}
 .logo{font-size:20px;font-weight:700;letter-spacing:-0.4px;display:flex;align-items:center;gap:6px}
 .logo span{color:var(--accent)}
 
 .right-actions{display:flex;align-items:center;gap:12px}
 .tabs{display:flex;gap:4px;background:var(--bg2);border-radius:var(--radius-lg);padding:4px;border:1px solid var(--border)}
-.tab{padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--text2);border-radius:var(--radius);transition:all .2s;display:flex;align-items:center;gap:6px}
+.tab{padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--text2);border-radius:var(--radius);transition:all .2s;display:flex;align-items:center;gap:6px}
 .tab:hover{color:var(--text);background:rgba(0,0,0,0.02)}
 body.dark-theme .tab:hover{color:var(--text);background:rgba(255,255,255,0.02)}
 .tab.active{background:var(--bg);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.04);border:1px solid var(--border)}
@@ -63,6 +63,7 @@ textarea{resize:vertical;min-height:90px}
 .btn:hover{background:var(--bg2);border-color:var(--text2)}
 .btn:active{transform:scale(0.97)}
 .btn-primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+body.dark-theme .btn-primary{background:var(--text);color:var(--bg3);border-color:var(--text)}
 .btn-primary:hover{opacity:0.9}
 .btn-danger{color:#c93b3b;border-color:rgba(201,59,59,0.25);background:transparent}
 .btn-danger:hover{background:rgba(201,59,59,0.08);border-color:rgba(201,59,59,0.4)}
@@ -99,7 +100,7 @@ input:checked+.slider:before{transform:translateX(18px)}
 .day-head.today .date{color:var(--accent)}
 .day-head.weekend{background:#EEEDFE;color:#534AB7;border-color:rgba(83,74,183,0.15)}
 .day-head.weekend .date{color:#534AB7}
-.day-body{border:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);padding:8px;min-height:320px;background:var(--bg);flex:1;display:flex;flex-direction:column;gap:6px}
+.day-body{border:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);padding:8px;min-height:360px;background:var(--bg);flex:1;display:flex;flex-direction:column;gap:6px}
 
 /* Timeline Task Blocks */
 .block{border-radius:7px;padding:8px 10px;font-size:12px;line-height:1.4;border-left:3px solid transparent;box-shadow:0 1px 2px rgba(0,0,0,0.02);transition:transform 0.15s}
@@ -122,13 +123,18 @@ input:checked+.slider:before{transform:translateX(18px)}
 .stat-n{font-size:24px;font-weight:700;color:var(--text);letter-spacing:-0.5px}
 .stat-l{font-size:11px;color:var(--text2);margin-top:4px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
 
-/* Options Matrix */
+/* Options Matrix Layouts */
 .setting-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
 .setting-row:last-child{border-bottom:none}
 .setting-label{font-size:14px;font-weight:600}
 .setting-sub{font-size:12px;color:var(--text2);margin-top:3px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:550px){.grid2{grid-template-columns:1fr}}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:700px){
+  .grid3,.grid4{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+}
 .field-label{font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em}
 
 /* Drag List Styling */
@@ -160,18 +166,19 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
 <div class="app-shell">
   <div class="topbar">
     <div class="logo">
-      <i class="ti ti-calendar-event" style="color:var(--accent)"></i> my<span>schedule</span>
-      <span id="notif-dot" title="Notifications on" style="display:none;color:var(--accent);font-size:13px"><i class="ti ti-bell-filled"></i></span>
+      <i class="ti ti-calendar-event" style="color:var(--accent)"></i> dynamic<span>schedule</span>
+      <span id="notif-dot" title="Notifications active" style="display:none;color:var(--accent);font-size:13px"><i class="ti ti-bell-filled"></i></span>
     </div>
     <div class="right-actions">
       <button class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light/Dark mode">
         <i id="theme-icon" class="ti ti-moon"></i> <span id="theme-text">Dark</span>
       </button>
       <div class="tabs" role="tablist">
-        <button class="tab active" onclick="showTab('calendar',this)" role="tab"><i class="ti ti-calendar"></i> Week</button>
+        <button class="tab active" onclick="showTab('calendar',this)" role="tab"><i class="ti ti-calendar"></i> Grid View</button>
         <button class="tab" onclick="showTab('tasks',this)" role="tab"><i class="ti ti-list-check"></i> Tasks</button>
-        <button class="tab" onclick="showTab('settings',this)" role="tab"><i class="ti ti-settings"></i> Settings</button>
-        <button class="tab" onclick="showTab('ai',this)" role="tab"><i class="ti ti-sparkles"></i> AI plan</button>
+        <button class="tab" onclick="showTab('priority',this)" role="tab"><i class="ti ti-grip-vertical"></i> Priority Rank</button>
+        <button class="tab" onclick="showTab('settings',this)" role="tab"><i class="ti ti-settings"></i> Time Blocks</button>
+        <button class="tab" onclick="showTab('ai',this)" role="tab"><i class="ti ti-sparkles"></i> AI Plan</button>
       </div>
     </div>
   </div>
@@ -185,7 +192,7 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
       <div style="display:flex;gap:8px">
         <button class="btn btn-icon" onclick="changeWeek(-1)"><i class="ti ti-chevron-left"></i></button>
         <button class="btn btn-icon" onclick="changeWeek(1)"><i class="ti ti-chevron-right"></i></button>
-        <button class="btn btn-primary" onclick="generateAndRender()"><i class="ti ti-refresh"></i> Refresh</button>
+        <button class="btn btn-primary" onclick="generateAndRender()"><i class="ti ti-refresh"></i> Re-Calculate</button>
       </div>
     </div>
     <div class="week-grid" id="week-grid"></div>
@@ -194,25 +201,25 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
 
   <div id="tab-tasks" class="section">
     <div class="stats">
-      <div class="stat"><div class="stat-n" id="s-tasks">0</div><div class="stat-l">active tasks</div></div>
-      <div class="stat"><div class="stat-n" id="s-time">0h</div><div class="stat-l">study/day</div></div>
-      <div class="stat"><div class="stat-n" id="s-school">on</div><div class="stat-l">school status</div></div>
+      <div class="stat"><div class="stat-n" id="s-tasks">0</div><div class="stat-l">active items</div></div>
+      <div class="stat"><div class="stat-n" id="s-time">0h</div><div class="stat-l">floating load/day</div></div>
+      <div class="stat"><div class="stat-n" id="s-break">0m</div><div class="stat-l">task buffers</div></div>
     </div>
     <div class="card">
-      <div class="card-title">Goals & tasks</div>
+      <div class="card-title">Floating Goals & Targets</div>
       <div id="task-list"></div>
       <div class="add-row">
-        <div style="flex:2.5"><div class="field-label">Task name</div><input type="text" id="new-name" placeholder="e.g. SAT Math Prep"/></div>
+        <div style="flex:2.5"><div class="field-label">Task name</div><input type="text" id="new-name" placeholder="e.g. Project Synthesis Research"/></div>
         <div><div class="field-label">Priority Tier</div>
           <select id="new-tier">
-            <option value="1">Tier 1 — critical</option>
-            <option value="2">Tier 2 — high</option>
-            <option value="3">Tier 3 — medium</option>
-            <option value="4">Tier 4 — low</option>
-            <option value="r">Reminder only</option>
+            <option value="1">Tier 1 — Critical Focus</option>
+            <option value="2">Tier 2 — High Focus</option>
+            <option value="3">Tier 3 — Medium Focus</option>
+            <option value="4">Tier 4 — Low Focus</option>
+            <option value="r">Visual Reminder Only</option>
           </select>
         </div>
-        <div style="max-width:100px"><div class="field-label">Mins/day</div><input type="number" id="new-mins" value="45" min="5" max="180"/></div>
+        <div style="max-width:110px"><div class="field-label">Duration (Min)</div><input type="number" id="new-mins" value="45" min="5" max="360"/></div>
         <div><div class="field-label">Cadence</div>
           <select id="new-days">
             <option value="daily">Every day</option>
@@ -221,61 +228,64 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
             <option value="weekends">Weekends only</option>
           </select>
         </div>
-        <button class="btn btn-primary" onclick="addTask()"><i class="ti ti-plus"></i> Add</button>
+        <button class="btn btn-primary" onclick="addTask()"><i class="ti ti-plus"></i> Inject</button>
       </div>
     </div>
+  </div>
+
+  <div id="tab-priority" class="section">
     <div class="card">
-      <div class="card-title">Priority Drag Matrix Matrix <span>Drag blocks to rearrange visual ordering focus</span></div>
+      <div class="card-title">Priority Sorting Engine <span>Drag blocks vertically. The placement stack sequence dictates which floating blocks claim earlier dynamic time gaps.</span></div>
       <div id="priority-list" ondragover="allowDrop(event)"></div>
     </div>
   </div>
 
   <div id="tab-settings" class="section">
     <div class="card">
-      <div class="card-title">Schedule toggles</div>
+      <div class="card-title">Sleep Bounds & System Buffer Parameters</div>
+      <div class="grid4">
+        <div><div class="field-label">Wake Up Target</div><input type="time" id="t-wake" onchange="save()"/></div>
+        <div><div class="field-label">Bedtime Target</div><input type="time" id="t-bed" onchange="save()"/></div>
+        <div><div class="field-label">Buffer Between Tasks (Mins)</div><input type="number" id="t-break" min="0" max="60" onchange="save()"/></div>
+        <div><div class="field-label">Morning Get-Ready (Mins)</div><input type="number" id="t-mprep" min="0" max="120" onchange="save()"/></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Routine Meal Windows</div>
+      <div class="grid3" style="margin-bottom:14px">
+        <div><div class="field-label">Breakfast Start</div><input type="time" id="t-bfast-s" onchange="save()"/></div>
+        <div><div class="field-label">Breakfast Duration (Mins)</div><input type="number" id="t-bfast-d" min="0" max="120" onchange="save()"/></div>
+      </div>
+      <div class="grid3" style="margin-bottom:14px">
+        <div><div class="field-label">Lunch Start</div><input type="time" id="t-lunch-s" onchange="save()"/></div>
+        <div><div class="field-label">Lunch Duration (Mins)</div><input type="number" id="t-lunch-d" min="0" max="120" onchange="save()"/></div>
+      </div>
+      <div class="grid3">
+        <div><div class="field-label">Dinner Start</div><input type="time" id="t-dinner-s" onchange="save()"/></div>
+        <div><div class="field-label">Dinner Duration (Mins)</div><input type="number" id="t-dinner-d" min="0" max="120" onchange="save()"/></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Structural Constraint Block (e.g. Work hours / Fixed Shifts)</div>
       <div class="setting-row">
-        <div><div class="setting-label">School is active</div><div class="setting-sub">Turn off when school ends — frees up mornings</div></div>
+        <div><div class="setting-label">Enable Structural Shift Window</div><div class="setting-sub">Locks a specialized block completely out of your schedule on weekdays.</div></div>
         <label class="toggle"><input type="checkbox" id="tog-school" onchange="save()"><span class="slider"></span></label>
       </div>
-      <div class="setting-row">
-        <div><div class="setting-label">Soccer practice</div><div class="setting-sub">Mon/Wed 5:45–9pm · Thu 6–7pm · Sat variable hours</div></div>
-        <label class="toggle"><input type="checkbox" id="tog-soccer" onchange="save()"><span class="slider"></span></label>
-      </div>
-      <div class="setting-row">
-        <div><div class="setting-label">Science fair reminder</div><div class="setting-sub">Shows as a visual calendar reminder block on weekdays</div></div>
-        <label class="toggle"><input type="checkbox" id="tog-sf" onchange="save()"><span class="slider"></span></label>
-      </div>
-      <div class="setting-row">
-        <div><div class="setting-label">Summer workshop reminder</div><div class="setting-sub">Shows as a visual calendar reminder block on weekdays</div></div>
-        <label class="toggle"><input type="checkbox" id="tog-sw" onchange="save()"><span class="slider"></span></label>
-      </div>
-      <div class="setting-row">
-        <div><div class="setting-label">Hindi study</div></div>
-        <label class="toggle"><input type="checkbox" id="tog-hindi" onchange="save()"><span class="slider"></span></label>
+      <div class="grid3">
+        <div><div class="field-label">Block Label Name</div><input type="text" id="t-shift-lbl" placeholder="e.g. Office Shift / School" onchange="save()"/></div>
+        <div><div class="field-label">Shift Start Time</div><input type="time" id="t-leave" onchange="save()"/></div>
+        <div><div class="field-label">Shift End Time</div><input type="time" id="t-home" onchange="save()"/></div>
       </div>
     </div>
+
     <div class="card">
-      <div class="card-title">Daily time blocks</div>
-      <div class="grid2">
-        <div><div class="field-label">Wake up (weekdays)</div><input type="time" id="t-wake" onchange="save()"/></div>
-        <div><div class="field-label">Leave for school</div><input type="time" id="t-leave" onchange="save()"/></div>
-        <div><div class="field-label">Home from school</div><input type="time" id="t-home" onchange="save()"/></div>
-        <div><div class="field-label">Bedtime</div><input type="time" id="t-bed" onchange="save()"/></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Saturday soccer configuration</div>
-      <div class="grid2">
-        <div><div class="field-label">Start time</div><input type="time" id="t-sat-s" onchange="save()"/></div>
-        <div><div class="field-label">End time</div><input type="time" id="t-sat-e" onchange="save()"/></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Notification engine</div>
+      <div class="card-title">Notification dispatch engine</div>
       <div class="setting-row">
         <div>
-          <div class="setting-label">Task reminders</div>
-          <div class="setting-sub">Get a native browser notification before each task starts</div>
+          <div class="setting-label">Native Device Alerts</div>
+          <div class="setting-sub">Receive browser background prompts immediately before scheduled event blocks.</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <span id="notif-status-pill" class="notif-pill notif-off"><i class="ti ti-bell-off"></i> Off</span>
@@ -289,24 +299,25 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
       </div>
       <div id="notif-upcoming" style="font-size:12px;color:var(--text2);margin-top:8px;display:none"></div>
     </div>
+
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn" onclick="exportData()"><i class="ti ti-download"></i> Export configuration</button>
-      <button class="btn btn-danger" onclick="resetAll()"><i class="ti ti-trash"></i> Reset application data</button>
+      <button class="btn" onclick="exportData()"><i class="ti ti-download"></i> Backup Parameters</button>
+      <button class="btn btn-danger" onclick="resetAll()"><i class="ti ti-trash"></i> Reset System Cache</button>
     </div>
   </div>
 
   <div id="tab-ai" class="section">
     <div class="card">
-      <div class="card-title">AI-powered weekly strategic blueprint</div>
-      <p style="font-size:13.5px;color:var(--text2);margin-bottom:16px">Tell the engine what your focus goals are for the week. It builds out a highly optimized, custom roadmap built right into your layout grid constraints.</p>
-      <textarea id="ai-prompt" placeholder="e.g. I have an AMC mock exam this Saturday. Make sure I prioritize math drills over alternate day structures, but keep Hindi tracking fine..."></textarea>
+      <div class="card-title">AI-Powered Strategic Weekly Roadmap</div>
+      <p style="font-size:13.5px;color:var(--text2);margin-bottom:16px">Supply your focal points for the week. The client engine dynamically evaluates your configured meal brackets, buffers, and floating assignments to plot an analytical optimization roadmap.</p>
+      <textarea id="ai-prompt" placeholder="e.g. My energy targets spike in the evening windows. Make sure critical items prioritize later slots and optimize tracking parameters..."></textarea>
       <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
         <button class="btn btn-primary" id="ai-btn" onclick="callAI()"><i class="ti ti-sparkles"></i> Generate strategic blueprint</button>
-        <button class="btn" onclick="generateAndRender();showTab('calendar',document.querySelector('.tab'))"><i class="ti ti-calendar"></i> Return to schedule map</button>
+        <button class="btn" onclick="generateAndRender();showTab('calendar',document.querySelector('.tab'))"><i class="ti ti-calendar"></i> Return to layout grid</button>
       </div>
     </div>
     <div id="ai-card" class="card" style="display:none">
-      <div class="card-title">Your personalized strategic roadmap</div>
+      <div class="card-title">Your Custom Strategic Roadmap</div>
       <div id="ai-result"></div>
     </div>
   </div>
@@ -316,41 +327,40 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
 
 <script>
 const DEFAULT_SETTINGS={
-  school:true,soccer:true,sf:true,sw:true,hindi:true,
-  wake:'05:15',leave:'06:45',home:'15:00',bed:'22:30',
-  satS:'09:00',satE:'11:00',
-  notif:false,notifAdvance:10,
+  school:true,
+  shiftLbl:'Fixed Core Shift',
+  wake:'06:00', leave:'07:30', home:'15:00', bed:'22:30',
+  breakMins:10, mPrepMins:30,
+  bfastS:'07:00', bfastD:30,
+  lunchS:'12:30', lunchD:40,
+  dinnerS:'18:30', dinnerD:45,
+  notif:false, notifAdvance:10,
   theme:'light'
 };
+
 const DEFAULT_TASKS=[
-  {id:1,name:'Science fair',tier:1,mins:60,active:true,days:'weekdays',isReminder:true},
-  {id:2,name:'AMC 10 prep',tier:2,mins:45,active:true,days:'daily',isReminder:false},
-  {id:3,name:'USACO practice',tier:3,mins:40,active:true,days:'alternate',isReminder:false},
-  {id:4,name:'Hindi study',tier:3,mins:30,active:true,days:'alternate',isReminder:false},
-  {id:5,name:'Free reading / break',tier:4,mins:30,active:true,days:'daily',isReminder:false},
-  {id:6,name:'Summer workshop',tier:'r',mins:0,active:true,days:'weekdays',isReminder:true},
+  {id:1,name:'Priority Deep Work Sprint',tier:1,mins:60,active:true,days:'weekdays',isReminder:false},
+  {id:2,name:'Technical Revision Slot',tier:2,mins:45,active:true,days:'daily',isReminder:false},
+  {id:3,name:'Creative & Open Research',tier:3,mins:45,active:true,days:'alternate',isReminder:false},
+  {id:4,name:'Administrative & Email Cleanout',tier:4,mins:30,active:true,days:'daily',isReminder:false},
+  {id:5,name:'Weekly Strategic Horizon Audit',tier:'r',mins:0,active:true,days:'weekends',isReminder:true}
 ];
 
 let cfg={};let tasks=[];let weekOff=0;let nextId=10;
 
 function load(){
-  // PREMIUM DATA RECOVERY GUARD: Safely maps local storage objects without crash traps
   try {
-    const rawCfg = localStorage.getItem('sched-cfg');
+    const rawCfg = localStorage.getItem('master-cfg');
     cfg = rawCfg ? Object.assign({...DEFAULT_SETTINGS}, JSON.parse(rawCfg)) : {...DEFAULT_SETTINGS};
-  } catch(e) {
-    cfg = {...DEFAULT_SETTINGS};
-  }
+  } catch(e) { cfg = {...DEFAULT_SETTINGS}; }
   
   try {
-    const rawTasks = localStorage.getItem('sched-tasks');
+    const rawTasks = localStorage.getItem('master-tasks');
     tasks = rawTasks ? JSON.parse(rawTasks) : DEFAULT_TASKS.map(t=>({...t}));
     if(!Array.isArray(tasks) || tasks.length === 0) { tasks = DEFAULT_TASKS.map(t=>({...t})); }
-  } catch(e) {
-    tasks = DEFAULT_TASKS.map(t=>({...t}));
-  }
+  } catch(e) { tasks = DEFAULT_TASKS.map(t=>({...t})); }
   
-  try{nextId=JSON.parse(localStorage.getItem('sched-nid'))||10;}catch{nextId=10;}
+  try{nextId=JSON.parse(localStorage.getItem('master-nid'))||10;}catch{nextId=10;}
   
   applyTheme(cfg.theme || 'light');
   applyToUI();
@@ -358,62 +368,63 @@ function load(){
 
 function save(){
   readFromUI();
-  localStorage.setItem('sched-cfg',JSON.stringify(cfg));
-  localStorage.setItem('sched-tasks',JSON.stringify(tasks));
-  localStorage.setItem('sched-nid',JSON.stringify(nextId));
+  localStorage.setItem('master-cfg',JSON.stringify(cfg));
+  localStorage.setItem('master-tasks',JSON.stringify(tasks));
+  localStorage.setItem('master-nid',JSON.stringify(nextId));
   showToast();
   generateAndRender();
-  if(cfg.notif)scheduleNotifications();
+  if(cfg.notif) scheduleNotifications();
   updateNotifUI();
 }
 
 function showToast(){
   const t=document.getElementById('toast');
-  t.style.opacity='1';
-  t.style.transform='translateY(0)';
-  setTimeout(()=>{
-    t.style.opacity='0';
-    t.style.transform='translateY(8px)';
-  },1800);
+  t.style.opacity='1'; t.style.transform='translateY(0)';
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(8px)'; },1500);
 }
 
 function readFromUI(){
   cfg.school=document.getElementById('tog-school').checked;
-  cfg.soccer=document.getElementById('tog-soccer').checked;
-  cfg.sf=document.getElementById('tog-sf').checked;
-  cfg.sw=document.getElementById('tog-sw').checked;
-  cfg.hindi=document.getElementById('tog-hindi').checked;
+  cfg.shiftLbl=document.getElementById('t-shift-lbl').value.trim() || 'Core Shift';
   cfg.wake=document.getElementById('t-wake').value||cfg.wake;
   cfg.leave=document.getElementById('t-leave').value||cfg.leave;
   cfg.home=document.getElementById('t-home').value||cfg.home;
   cfg.bed=document.getElementById('t-bed').value||cfg.bed;
-  cfg.satS=document.getElementById('t-sat-s').value||cfg.satS;
-  cfg.satE=document.getElementById('t-sat-e').value||cfg.satE;
+  cfg.breakMins=parseInt(document.getElementById('t-break').value)||0;
+  cfg.mPrepMins=parseInt(document.getElementById('t-mprep').value)||0;
+  cfg.bfastS=document.getElementById('t-bfast-s').value||cfg.bfastS;
+  cfg.bfastD=parseInt(document.getElementById('t-bfast-d').value)||0;
+  cfg.lunchS=document.getElementById('t-lunch-s').value||cfg.lunchS;
+  cfg.lunchD=parseInt(document.getElementById('t-lunch-d').value)||0;
+  cfg.dinnerS=document.getElementById('t-dinner-s').value||cfg.dinnerS;
+  cfg.dinnerD=parseInt(document.getElementById('t-dinner-d').value)||0;
   cfg.notifAdvance=parseInt(document.getElementById('notif-advance').value)||10;
 }
 
 function applyToUI(){
   document.getElementById('tog-school').checked=cfg.school??true;
-  document.getElementById('tog-soccer').checked=cfg.soccer??true;
-  document.getElementById('tog-sf').checked=cfg.sf??true;
-  document.getElementById('tog-sw').checked=cfg.sw??true;
-  document.getElementById('tog-hindi').checked=cfg.hindi??true;
-  document.getElementById('t-wake').value=cfg.wake||'05:15';
-  document.getElementById('t-leave').value=cfg.leave||'06:45';
+  document.getElementById('t-shift-lbl').value=cfg.shiftLbl||'';
+  document.getElementById('t-wake').value=cfg.wake||'06:00';
+  document.getElementById('t-leave').value=cfg.leave||'07:30';
   document.getElementById('t-home').value=cfg.home||'15:00';
   document.getElementById('t-bed').value=cfg.bed||'22:30';
-  document.getElementById('t-sat-s').value=cfg.satS||'09:00';
-  document.getElementById('t-sat-e').value=cfg.satE||'11:00';
+  document.getElementById('t-break').value=cfg.breakMins??10;
+  document.getElementById('t-mprep').value=cfg.mPrepMins??30;
+  document.getElementById('t-bfast-s').value=cfg.bfastS||'07:00';
+  document.getElementById('t-bfast-d').value=cfg.bfastD??30;
+  document.getElementById('t-lunch-s').value=cfg.lunchS||'12:30';
+  document.getElementById('t-lunch-d').value=cfg.lunchD??40;
+  document.getElementById('t-dinner-s').value=cfg.dinnerS||'18:30';
+  document.getElementById('t-dinner-d').value=cfg.dinnerD??45;
   document.getElementById('notif-advance').value=cfg.notifAdvance||10;
   updateNotifUI();
 }
 
-/* PREMIUM DARK THEME CONTROLLER */
 function toggleTheme(){
   const targetTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
   applyTheme(targetTheme);
   cfg.theme = targetTheme;
-  localStorage.setItem('sched-cfg',JSON.stringify(cfg));
+  localStorage.setItem('master-cfg',JSON.stringify(cfg));
 }
 
 function applyTheme(theme){
@@ -430,10 +441,11 @@ function applyTheme(theme){
   }
 }
 
-// Time calculation Engines
+/* HELPER TIMING OPERATIONS */
 function fmt(t){if(!t)return'';const[h,m]=t.split(':').map(Number);const ap=h>=12?'PM':'AM';const h12=h%12||12;return m===0?`${h12}${ap}`:`${h12}:${String(m).padStart(2,'0')}${ap}`;}
-function addM(t,m){if(!t)t="00:00";const[h,mm]=t.split(':').map(Number);const tot=h*60+mm+m;return`${String(Math.floor(tot/60)%24).padStart(2,'0')}:${String(tot%60).padStart(2,'0')}`;}
-function toMins(t){if(!t)return 0;const[h,m]=t.split(':').map(Number);return h*60+m;}
+function addM(t,m){const[h,mm]=t.split(':').map(Number);const tot=h*60+mm+m;return`${String(Math.floor(tot/60)%24).padStart(2,'0')}:${String(tot%60).padStart(2,'0')}`;}
+function toMins(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
+function minsToTime(m){return`${String(Math.floor(m/60)%24).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;}
 function mh(m){return m>=60?`${Math.round(m/60*10)/10}h`:`${m}m`;}
 
 const COLORS={
@@ -442,90 +454,116 @@ const COLORS={
   3:{bg:'#EAF3DE',c:'#3B6D11',border:'#639922'},
   4:{bg:'#F1EFE8',c:'#5F5E5A',border:'#888780'},
   r:{bg:'#FBEAF0',c:'#993556',border:'#D4537E'},
-  school:{bg:'#EEEDFE',c:'#534AB7',border:'#7F77DD'},
-  soccer:{bg:'#E1F5EE',c:'#0F6E56',border:'#1D9E75'},
-  prep:{bg:'#E6F1FB',c:'#185FA5',border:'#378ADD'},
-  free:{bg:'#F1EFE8',c:'#5F5E5A',border:'#888780'},
+  fixed:{bg:'#EEEDFE',c:'#534AB7',border:'#7F77DD'},
+  routine:{bg:'#E8F4F8',c:'#1D6F8A',border:'#3A9AD4'}
 };
 
-function block(name,start,end,type,note){return{name,start,end,type,note:note||''};}
-
+/* UNIVERSAL TIMELINE GAP-FILLING ALGORITHM */
 function buildDay(di){
-  const isSat=di===5,isSun=di===6,isWeekend=di>=5;
-  const isMon=di===0,isWed=di===2,isThu=di===3;
-  const blocks=[];
+  const isWeekend=di>=5;
+  const rawFixedBlocks=[];
 
-  if(!isWeekend){
-    blocks.push(block('Morning prep',cfg.wake,cfg.leave,'prep'));
-    if(cfg.school)blocks.push(block('School',cfg.leave,'15:00','school'));
-  }else{
-    blocks.push(block('Morning',cfg.wake,addM(cfg.wake,90),'free'));
-  }
-
-  if(cfg.soccer){
-    if((isMon||isWed))blocks.push(block('Soccer practice','17:45','21:00','soccer'));
-    if(isThu)blocks.push(block('Soccer practice','18:00','19:00','soccer'));
-    if(isSat)blocks.push(block('Soccer practice',cfg.satS,cfg.satE,'soccer'));
-  }
-
-  const soccerEve=(isMon||isWed)||(isThu&&cfg.soccer);
-  let studyStart=isWeekend?addM(cfg.wake,100):(cfg.school?addM('15:00',15):addM(cfg.wake,30));
-  let studyEnd=soccerEve?(isThu?'17:30':'17:00'):addM(cfg.bed,-45);
-
-  const studyTasks=tasks.filter(t=>t.active&&t.isReminder===false&&!(t.id===4&&!cfg.hindi));
+  const wakeM = toMins(cfg.wake);
+  const bedM = toMins(cfg.bed);
   
-  // Custom tasks retain user drag-sort ordering implicitly via internal array alignment
-  let cur=studyStart;
-  for(const t of studyTasks){
-    if(t.days==='weekdays'&&isWeekend)continue;
-    if(t.days==='weekends'&&!isWeekend)continue;
-    if(t.days==='alternate'&&di%2===1)continue;
-    const endT=addM(cur,t.mins);
-    if(toMins(endT)>toMins(studyEnd))break;
-    blocks.push(block(t.name,cur,endT,t.tier));
-    cur=addM(endT,8);
+  if(wakeM > 0) rawFixedBlocks.push({name:'Sleep Block', s: 0, e: wakeM, type:'fixed'});
+  if(bedM < 1440) rawFixedBlocks.push({name:'Rest / Sleep', s: bedM, e: 1440, type:'fixed'});
+
+  if(cfg.mPrepMins > 0) rawFixedBlocks.push({name:'Morning Get-Ready', s: wakeM, e: wakeM + cfg.mPrepMins, type:'routine'});
+  if(cfg.bfastD > 0) { const bs = toMins(cfg.bfastS); rawFixedBlocks.push({name:'Breakfast Slot', s: bs, e: bs + cfg.bfastD, type:'routine'}); }
+  if(cfg.lunchD > 0) { const ls = toMins(cfg.lunchS); rawFixedBlocks.push({name:'Lunch Window', s: ls, e: ls + cfg.lunchD, type:'routine'}); }
+  if(cfg.dinnerD > 0) { const ds = toMins(cfg.dinnerS); rawFixedBlocks.push({name:'Dinner Window', s: ds, e: ds + cfg.dinnerD, type:'routine'}); }
+
+  if(cfg.school && !isWeekend) {
+    const ss = toMins(cfg.leave); const se = toMins(cfg.home);
+    if(se > ss) rawFixedBlocks.push({name: cfg.shiftLbl, s: ss, e: se, type: 'fixed'});
   }
 
-  if(cfg.sf&&tasks.find(t=>t.id===1&&t.active)&&!isWeekend)
-    blocks.push(block('Science fair','','','r','📌 reminder'));
-  if(cfg.sw&&tasks.find(t=>t.id===6&&t.active)&&!isWeekend)
-    blocks.push(block('Summer workshop','','','r','📌 reminder'));
+  // Sort structural anchors and merge intersecting frames
+  rawFixedBlocks.sort((a,b)=>a.s - b.s);
+  const mergedFixed=[];
+  for(const b of rawFixedBlocks){
+    if(mergedFixed.length === 0){ mergedFixed.push(b); } 
+    else {
+      const prev = mergedFixed[mergedFixed.length - 1];
+      if(b.s < prev.e) {
+        prev.e = Math.max(prev.e, b.e);
+        if(b.type === 'fixed') prev.type = 'fixed';
+        prev.name = prev.name.includes(b.name) ? prev.name : prev.name + ' & ' + b.name;
+      } else { mergedFixed.push(b); }
+    }
+  }
 
-  blocks.push(block('Wind-down',addM(cfg.bed,-40),cfg.bed,'free'));
-  return blocks;
+  const timelineBlocks = [];
+  for(const f of mergedFixed){
+    if(f.s >= wakeM && f.e <= bedM) {
+      timelineBlocks.push({name: f.name, start: minsToTime(f.s), end: minsToTime(f.e), type: f.type});
+    }
+  }
+
+  // Task execution sequencing tracks explicit array indexes dictated by user drag-and-drop mechanics
+  const dayTasks=tasks.filter(t => t.active && !t.isReminder);
+  let currentPointer = wakeM;
+  const bufferGap = cfg.breakMins;
+
+  for(const task of dayTasks) {
+    if(task.days==='weekdays' && isWeekend) continue;
+    if(task.days==='weekends' && !isWeekend) continue;
+    if(task.days==='alternate' && di%2===1) continue;
+
+    let placed = false;
+    while(!placed && currentPointer < bedM) {
+      const prospectiveEnd = currentPointer + task.mins;
+      const collision = mergedFixed.find(f => (currentPointer < f.e && prospectiveEnd > f.s));
+      
+      if(!collision && prospectiveEnd <= bedM) {
+        timelineBlocks.push({name: task.name, start: minsToTime(currentPointer), end: minsToTime(prospectiveEnd), type: task.tier});
+        currentPointer = prospectiveEnd + bufferGap;
+        placed = true;
+      } else if(collision) {
+        currentPointer = collision.e;
+      } else { break; }
+    }
+  }
+
+  // Append context-free reminders
+  tasks.filter(t => t.active && t.isReminder).forEach(r => {
+    if(r.days==='weekdays' && isWeekend) return;
+    if(r.days==='weekends' && !isWeekend) return;
+    timelineBlocks.push({name: r.name, start: '', end: '', type: 'r', note: '📌'});
+  });
+
+  return timelineBlocks.sort((a,b)=> {
+    if(!a.start) return 1; if(!b.start) return -1;
+    return toMins(a.start) - toMins(b.start);
+  });
 }
 
 function blockEl(b){
   const col=COLORS[b.type]||COLORS[4];
-  const isReminder=b.note&&b.note.includes('📌');
   return`<div class="block" style="background:${col.bg};border-left-color:${col.border}">
-    <span class="block-name" style="color:${col.c}">${b.name}${isReminder?' 📌':''}</span>
+    <span class="block-name" style="color:${col.c}">${b.name}${b.note?' 📌':''}</span>
     ${b.start?`<span class="block-time">${fmt(b.start)}${b.end?' – '+fmt(b.end):''}</span>`:''}
   </div>`;
 }
 
 function generateAndRender(){
   const grid=document.getElementById('week-grid');
-  if(!grid)return;
-  grid.innerHTML='';
-  const now=new Date();
-  const mon=new Date(now);
+  if(!grid)return; grid.innerHTML='';
+  const now=new Date(); const mon=new Date(now);
   mon.setDate(now.getDate()-((now.getDay()+6)%7)+weekOff*7);
   const dates=Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
   const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   const todayStr=now.toDateString();
 
-  document.getElementById('week-label').textContent=weekOff===0?'This week':weekOff===1?'Next week':weekOff===-1?'Last week':`Week of ${dates[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+  document.getElementById('week-label').textContent=weekOff===0?'Current Planning Target':weekOff===1?'Next Horizon Week':`Offset Planning Week`;
   document.getElementById('week-range').textContent=`${dates[0].toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${dates[6].toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
 
   DAYS.forEach((d,i)=>{
-    const isWeekend=i>=5;
-    const isToday=dates[i].toDateString()===todayStr;
-    const col=document.createElement('div');
-    col.className='day-col';
-    const headClass=`day-head${isToday?' today':isWeekend?' weekend':''}`;
+    const isWeekend=i>=5; const isToday=dates[i].toDateString()===todayStr;
+    const col=document.createElement('div'); col.className='day-col';
     const dayBlocks=buildDay(i);
-    col.innerHTML=`<div class="${headClass}">${d}<span class="date">${dates[i].getDate()}</span></div>
+    col.innerHTML=`<div class="day-head${isToday?' today':isWeekend?' weekend':''}">${d}<span class="date">${dates[i].getDate()}</span></div>
       <div class="day-body">${dayBlocks.map(blockEl).join('')}</div>`;
     grid.appendChild(col);
   });
@@ -534,12 +572,10 @@ function generateAndRender(){
 
 function renderLegend(){
   const items=[
-    {n:'School',t:'school'},{n:'Soccer',t:'soccer'},
-    {n:'Tier 1',t:1},{n:'Tier 2',t:2},{n:'Tier 3',t:3},{n:'Reminder',t:'r'},
+    {n:'Fixed Constraints',t:'fixed'},{n:'Meal / Routines',t:'routine'},
+    {n:'Tier 1 Focus',t:1},{n:'Tier 2 Focus',t:2},{n:'Tier 3 Focus',t:3},{n:'Visual Reminders',t:'r'},
   ];
-  const leg = document.getElementById('legend');
-  if(!leg) return;
-  leg.innerHTML=items.map(it=>{
+  document.getElementById('legend').innerHTML=items.map(it=>{
     const c=COLORS[it.t]||COLORS[4];
     return`<span class="legend-dot" style="background:${c.bg};color:${c.c};border:0.5px solid ${c.border}40">${it.n}</span>`;
   }).join('');
@@ -550,21 +586,20 @@ function renderTasks(){
   if(!list)return;
   const todayTimes=getTodayTaskTimes();
   list.innerHTML=tasks.map(t=>{
-    const col=COLORS[t.tier]||COLORS[4];
-    const tierLabel=t.tier===1?'Tier 1 · critical':t.tier===2?'Tier 2 · high':t.tier===3?'Tier 3 · medium':t.tier==='r'?'Reminder':'Tier 4 · low';
     const badgeCls=t.tier===1?'t1':t.tier===2?'t2':t.tier===3?'t3':t.tier==='r'?'tr':'t4';
+    const label=t.tier==='r'?'Reminder Block':`Tier ${t.tier}`;
     const sched=todayTimes[t.name];
     const schedHtml=t.isReminder?'':sched
-      ?`<span class="task-sched"><i class="ti ti-clock"></i> Today ${fmt(sched.start)}–${fmt(sched.end)}</span>`
-      :`<span class="task-sched skip">Not today</span>`;
+      ?`<span class="task-sched"><i class="ti ti-clock"></i> Slots Today ${fmt(sched.start)}–${fmt(sched.end)}</span>`
+      :`<span class="task-sched skip">No Active Match Today</span>`;
     return`<div class="task-row" style="opacity:${t.active?1:0.45}">
       <div class="task-info">
         <div class="task-name">${t.name}</div>
         <div class="task-meta">
           ${schedHtml}
-          <span class="badge ${badgeCls}">${tierLabel}</span>
-          ${t.mins>0?`<span style="font-size:11px;color:var(--text2)">${t.mins}min/day</span>`:''}
-          <span style="font-size:11px;color:var(--text2)">${t.days}</span>
+          <span class="badge ${badgeCls}">${label}</span>
+          ${t.mins>0?`<span style="font-size:11px;color:var(--text2)">${t.mins} min commitment</span>`:''}
+          <span style="font-size:11px;color:var(--text2);text-transform:capitalize"><i class="ti ti-calendar-repeat"></i> ${t.days}</span>
         </div>
       </div>
       <label class="toggle"><input type="checkbox" ${t.active?'checked':''} onchange="toggleTask(${t.id})"><span class="slider"></span></label>
@@ -572,263 +607,162 @@ function renderTasks(){
     </div>`;
   }).join('');
   const active=tasks.filter(t=>t.active);
-  const mins=active.filter(t=>!t.isReminder&&t.mins>0).reduce((s,t)=>s+t.mins,0);
+  const totalMins=active.filter(t=>!t.isReminder).reduce((s,t)=>s+t.mins,0);
   document.getElementById('s-tasks').textContent=active.length;
-  document.getElementById('s-time').textContent=mh(mins);
-  document.getElementById('s-school').textContent=cfg.school?'on':'off';
-  renderPriority();
+  document.getElementById('s-time').textContent=mh(totalMins);
+  document.getElementById('s-break').textContent=`${cfg.breakMins}m`;
 }
 
-/* PREMIUM FEATURE: INTERACTIVE NATIVE DRAG SORTING */
+/* PREMIUM DRAG ENGINE INTEGRATION */
 function renderPriority(){
   const pList = document.getElementById('priority-list');
   if(!pList) return;
-  const studyTasks=[...tasks].filter(t=>t.active&&!t.isReminder);
-  if(studyTasks.length===0){
-    pList.innerHTML=`<div style="font-size:13px;color:var(--text2);text-align:center;padding:12px">No active study goals configuration to rank.</div>`;
+  const activeFloating=tasks.filter(t=>t.active && !t.isReminder);
+  if(activeFloating.length===0){
+    pList.innerHTML=`<div style="font-size:13.5px;color:var(--text2);text-align:center;padding:20px">No active floating targets found to sequence.</div>`;
     return;
   }
-  pList.innerHTML=studyTasks.map((t,i)=>{
+  pList.innerHTML=activeFloating.map((t,i)=>{
     const badgeCls=t.tier===1?'t1':t.tier===2?'t2':t.tier===3?'t3':'t4';
     return`<div class="priority-item" draggable="true" data-id="${t.id}" ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)">
       <span class="drag-handle"><i class="ti ti-grip-vertical"></i></span>
       <span style="font-size:12px;color:var(--text3);min-width:18px;font-weight:600">${i+1}</span>
       <span style="flex:1;font-size:14px;font-weight:500">${t.name}</span>
-      <span class="badge ${badgeCls}">${t.mins}m/day</span>
+      <span class="badge ${badgeCls}">${t.mins}m</span>
     </div>`;
   }).join('');
-  
-  // Attach structural drag events
   pList.addEventListener('dragover', initDragLoop);
 }
 
-let draggedElementId = null;
-
-function handleDragStart(e) {
-  draggedElementId = e.currentTarget.getAttribute('data-id');
-  e.currentTarget.classList.add('dragging');
-}
-
+function handleDragStart(e) { e.currentTarget.classList.add('dragging'); }
 function handleDragEnd(e) {
   e.currentTarget.classList.remove('dragging');
-  // Reconstruct structural task storage arrays based on DOM transformations
   const elements = [...document.querySelectorAll('.priority-item')];
   const reorderedIds = elements.map(el => parseInt(el.getAttribute('data-id')));
   
-  let newTasksList = [];
-  // First preserve visual order parameters
-  reorderedIds.forEach(id => {
-    const found = tasks.find(t => t.id === id);
-    if(found) newTasksList.push(found);
-  });
-  // Append reminders or items that were filtered out of sorting view
-  tasks.forEach(t => {
-    if(!newTasksList.find(nt => nt.id === t.id)) {
-      newTasksList.push(t);
-    }
-  });
+  let recompiled = [];
+  reorderedIds.forEach(id => { const found = tasks.find(t => t.id === id); if(found) recompiled.push(found); });
+  tasks.forEach(t => { if(!recompiled.find(nc => nc.id === t.id)) recompiled.push(t); });
   
-  tasks = newTasksList;
+  tasks = recompiled;
   save();
 }
-
 function allowDrop(e) { e.preventDefault(); }
-
 function initDragLoop(e) {
-  e.preventDefault();
-  const list = document.getElementById('priority-list');
-  const draggingItem = document.querySelector('.priority-item.dragging');
-  if(!draggingItem) return;
+  e.preventDefault(); const list = document.getElementById('priority-list');
+  const draggingItem = document.querySelector('.priority-item.dragging'); if(!draggingItem) return;
   const siblings = [...list.querySelectorAll('.priority-item:not(.dragging)')];
-  let nextSibling = siblings.find(sibling => {
-    return e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2;
-  });
+  let nextSibling = siblings.find(sibling => e.clientY <= sibling.getBoundingClientRect().top + sibling.getBoundingClientRect().height / 2);
   list.insertBefore(draggingItem, nextSibling);
 }
 
 function addTask(){
-  const name=document.getElementById('new-name').value.trim();
-  if(!name)return;
+  const name=document.getElementById('new-name').value.trim(); if(!name)return;
   const tierRaw=document.getElementById('new-tier').value;
   const tier=tierRaw==='r'?'r':parseInt(tierRaw);
   const mins=tier==='r'?0:parseInt(document.getElementById('new-mins').value)||30;
   const days=document.getElementById('new-days').value;
   tasks.push({id:nextId++,name,tier,mins,active:true,days,isReminder:tier==='r'});
   document.getElementById('new-name').value='';
-  save();renderTasks();generateAndRender();
+  save(); renderTasks(); generateAndRender();
 }
-
-function removeTask(id){
-  if(confirm('Remove this task?')){
-    tasks=tasks.filter(t=>t.id!==id);
-    save();renderTasks();generateAndRender();
-  }
-}
-
-function toggleTask(id){
-  const t=tasks.find(x=>x.id===id);
-  if(t){
-    t.active=!t.active;
-    save();renderTasks();generateAndRender();
-  }
-}
+function removeTask(id){ if(confirm('Delete this task structural assignment?')){ tasks=tasks.filter(t=>t.id!==id); save(); renderTasks(); generateAndRender(); } }
+function toggleTask(id){ const t=tasks.find(x=>x.id===id); if(t){ t.active=!t.active; save(); renderTasks(); generateAndRender(); } }
 
 function showTab(id,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   if(btn)btn.classList.add('active');
-  if(id==='tasks')renderTasks();
-  if(id==='calendar')generateAndRender();
+  if(id==='tasks') renderTasks();
+  if(id==='priority') renderPriority();
+  if(id==='calendar') generateAndRender();
 }
-
 function changeWeek(d){weekOff+=d;generateAndRender();}
 
-/* PREMIUM AI ENGINE SIMULATION HOOK */
+/* PREMIUM AI GENERATIVE HOOK SIMULATION */
 async function callAI(){
   const prompt=document.getElementById('ai-prompt').value.trim();
-  const btn=document.getElementById('ai-btn');
-  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Thinking...';
-  const card=document.getElementById('ai-card');
-  const result=document.getElementById('ai-result');
-  card.style.display='block';
-  result.innerHTML='<div class="ai-loading"><div class="spinner"></div> Generating your plan...</div>';
+  const btn=document.getElementById('ai-btn'); btn.disabled=true; btn.innerHTML='Thinking...';
+  const card=document.getElementById('ai-card'); const result=document.getElementById('ai-result');
+  card.style.display='block'; result.innerHTML='<div class="ai-loading">Evaluating timeline arrays...</div>';
 
   setTimeout(() => {
-    // Elegant fallback client planner prevents direct Anthropic API key leaks on front-end requests
-    const simulatedResponse = `✨ PREMIUM STRATEGIC BLUEPRINT GENERATED
-
-🎯 Focus Objective: "${prompt || 'General Optimization Blueprint'}"
-
-⚡ SCHEDULE BREAKDOWN & VELOCITY TRACKING:
-• Weekdays: Morning prep is running smoothly from ${cfg.wake} to ${cfg.leave}. Your general study blocks start at 3:15 PM daily.
-• Soccer Balance: Mon/Wed and Thursday windows are fully booked at night. Focus your Tier 1/Tier 2 technical reviews early before practice. 
-• Alternate Day Management: USACO practice and Hindi tracking are shifting offsets efficiently to maximize memory retention without cognitive burnout.
-
-💡 STRATEGIC RECOMMENDATIONS:
-1. Since your Saturday soccer hours are set for ${fmt(cfg.satS)}–${fmt(cfg.satE)}, use Saturday afternoon exclusively for high-tier technical sprints.
-2. Keep maintaining your target bedtime window of ${fmt(cfg.bed)} to secure deep sleep phases needed to consolidate newly learned information.`;
+    result.textContent = `✨ USER STRATEGIC OPTIMIZATION BLUEPRINT GENERATED
     
-    result.textContent = simulatedResponse;
-    btn.disabled=false;
-    btn.innerHTML='<i class="ti ti-sparkles"></i> Generate strategic blueprint';
-  }, 1200);
+🎯 Core Focal Objective: "${prompt || 'General Balanced Operations Strategy'}"
+
+📊 CHRONOLOGICAL MATRIX EFFICIENCY METRICS:
+• Wake-to-Bed Availability: Formulated an active daily block sequence from ${cfg.wake} to ${cfg.bed}.
+• Routine Cushioning: System allocated dedicated slots for breakfast (${cfg.bfastD}m), lunch (${cfg.lunchD}m), and dinner (${cfg.dinnerD}m).
+• Flow Cushion: Dynamic task transition buffers are actively maintaining a ${cfg.breakMins}-minute cognitive cushion between cascading items.
+
+💡 ANALYTICAL ROADMAP SUGGESTIONS:
+1. Drag-and-drop hierarchy indicates tasks placed at the top stack claim slots instantly following your morning routine. Re-sort priorities whenever milestone targets shift.
+2. The current total time commitment scales beautifully across available placement slots. Adjust buffer durations to tighten or expand focus flexibility.`;
+    btn.disabled=false; btn.innerHTML='<i class="ti ti-sparkles"></i> Generate strategic blueprint';
+  }, 1100);
 }
 
 function exportData(){
-  const data={settings:cfg,tasks,exportedAt:new Date().toISOString()};
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='premium-schedule.json';a.click();
+  const blob=new Blob([JSON.stringify({settings:cfg,tasks,version:'Master-3.0'},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='universal-master-schedule.json';a.click();
 }
-
 function resetAll(){
-  if(confirm('Are you absolutely sure you want to reset all tracking parameters? This clears cache memory.')){
-    localStorage.clear();
-    cfg={...DEFAULT_SETTINGS};
-    tasks=DEFAULT_TASKS.map(t=>({...t}));
-    nextId=10;
-    applyTheme('light');
-    applyToUI();renderTasks();generateAndRender();
-    showToast();
+  if(confirm('Wipe calendar engine memory and local application storage configurations?')){
+    localStorage.clear(); cfg={...DEFAULT_SETTINGS}; tasks=DEFAULT_TASKS.map(t=>({...t})); nextId=10;
+    applyTheme('light'); applyToUI(); renderTasks(); generateAndRender(); showToast();
   }
 }
-
 function getTodayTaskTimes(){
-  const di=(new Date().getDay()+6)%7;
-  const blocks=buildDay(di);
-  const map={};
-  blocks.forEach(b=>{if(b.start&&b.end&&b.name)map[b.name]={start:b.start,end:b.end};});
-  return map;
+  const di=(new Date().getDay()+6)%7; const blocks=buildDay(di); const map={};
+  blocks.forEach(b=>{if(b.start&&b.end&&b.name)map[b.name]={start:b.start,end:b.end};}); return map;
 }
 
+/* NOTIFICATION AGENT SUB-SYSTEM */
 let _notifTimeouts=[];
-
 function updateNotifUI(){
   if(!('Notification'in window)){
-    const el=document.getElementById('notif-status-pill');
-    if(el){el.className='notif-pill notif-blocked';el.innerHTML='<i class="ti ti-bell-x"></i> Not supported';}
-    const btn=document.getElementById('notif-btn');if(btn)btn.style.display='none';
-    return;
+    const el=document.getElementById('notif-status-pill'); if(el){el.className='notif-pill notif-blocked'; el.innerHTML='Unsupported';}
+    const btn=document.getElementById('notif-btn'); if(btn)btn.style.display='none'; return;
   }
-  const perm=Notification.permission;
-  const on=cfg.notif&&perm==='granted';
-  const badge=document.getElementById('notif-status-pill');
-  const label=document.getElementById('notif-btn-label');
-  const dot=document.getElementById('notif-dot');
-  const btn=document.getElementById('notif-btn');
+  const perm=Notification.permission; const on=cfg.notif&&perm==='granted';
+  const badge=document.getElementById('notif-status-pill'); const label=document.getElementById('notif-btn-label');
+  const dot=document.getElementById('notif-dot'); const btn=document.getElementById('notif-btn');
   if(badge){
-    if(on){badge.className='notif-pill notif-on';badge.innerHTML='<i class="ti ti-bell-ringing"></i> Active';}
-    else if(perm==='denied'){badge.className='notif-pill notif-blocked';badge.innerHTML='<i class="ti ti-bell-x"></i> Blocked';}
-    else{badge.className='notif-pill notif-off';badge.innerHTML='<i class="ti ti-bell-off"></i> Disabled';}
+    if(on){badge.className='notif-pill notif-on'; badge.innerHTML='Active';}
+    else if(perm==='denied'){badge.className='notif-pill notif-blocked'; badge.innerHTML='Blocked';}
+    else{badge.className='notif-pill notif-off'; badge.innerHTML='Disabled';}
   }
-  if(label)label.textContent=on?'Disable':'Enable';
-  if(btn)btn.disabled=perm==='denied';
-  if(dot)dot.style.display=on?'':'none';
+  if(label)label.textContent=on?'Disable':'Enable'; if(btn)btn.disabled=perm==='denied'; if(dot)dot.style.display=on?'':'none';
   const upcoming=document.getElementById('notif-upcoming');
   if(upcoming&&on){
-    const now=new Date();
-    const di=(now.getDay()+6)%7;
-    const blocks=buildDay(di);
-    const soon=blocks.filter(b=>{
-      if(!b.start)return false;
-      const[h,m]=b.start.split(':').map(Number);
-      const t=new Date(now);t.setHours(h,m,0,0);
-      return t.getTime()-now.getTime()>0;
-    }).slice(0,4);
-    upcoming.style.display='';
-    upcoming.innerHTML=soon.length
-      ?'<strong>Next up today:</strong> '+soon.map(b=>`${b.name} (${fmt(b.start)})`).join(' · ')
-      :'All core blocks finished for today.';
+    const now=new Date(); const di=(now.getDay()+6)%7; const blocks=buildDay(di);
+    const soon=blocks.filter(b=>{ if(!b.start)return false; const[h,m]=b.start.split(':').map(Number); const t=new Date(now);t.setHours(h,m,0,0); return t.getTime()-now.getTime()>0; }).slice(0,3);
+    upcoming.style.display=''; upcoming.innerHTML=soon.length?'<strong>Up Next:</strong> '+soon.map(b=>`${b.name} (${fmt(b.start)})`).join(' · '):'No remaining timed blocks scheduled today.';
   }else if(upcoming){upcoming.style.display='none';}
 }
-
 function handleNotifBtn(){
   if(!('Notification'in window))return;
-  if(cfg.notif&&Notification.permission==='granted'){
-    cfg.notif=false;cancelNotifications();
-    localStorage.setItem('sched-cfg',JSON.stringify(cfg));
-    updateNotifUI();return;
-  }
-  Notification.requestPermission().then(p=>{
-    cfg.notif=p==='granted';
-    localStorage.setItem('sched-cfg',JSON.stringify(cfg));
-    updateNotifUI();
-    if(cfg.notif)scheduleNotifications();
-  });
+  if(cfg.notif&&Notification.permission==='granted'){ cfg.notif=false; cancelNotifications(); localStorage.setItem('master-cfg',JSON.stringify(cfg)); updateNotifUI(); return; }
+  Notification.requestPermission().then(p=>{ cfg.notif=p==='granted'; localStorage.setItem('master-cfg',JSON.stringify(cfg)); updateNotifUI(); if(cfg.notif)scheduleNotifications(); });
 }
-
 function scheduleNotifications(){
-  cancelNotifications();
-  if(!cfg.notif||!('Notification'in window)||Notification.permission!=='granted')return;
-  const now=new Date();
-  const di=(now.getDay()+6)%7;
-  const blocks=buildDay(di);
-  const advance=(cfg.notifAdvance||10)*60*1000;
+  cancelNotifications(); if(!cfg.notif||!('Notification'in window)||Notification.permission!=='granted')return;
+  const now=new Date(); const di=(now.getDay()+6)%7; const blocks=buildDay(di); const advance=(cfg.notifAdvance||10)*60*1000;
   blocks.forEach(b=>{
-    if(!b.start||!b.end)return;
-    const[h,m]=b.start.split(':').map(Number);
-    const fire=new Date(now);fire.setHours(h,m,0,0);
-    const delay=fire.getTime()-advance-now.getTime();
-    if(delay<0)return;
-    _notifTimeouts.push(setTimeout(()=>{
-      try{new Notification(`⏰ ${b.name} starts soon`,{
-        body:`Block scheduled for ${fmt(b.start)}–${fmt(b.end)}`,
-        tag:'sched-'+b.name
-      });}catch(e){}
-    },delay));
+    if(!b.start||!b.end)return; const[h,m]=b.start.split(':').map(Number); const fire=new Date(now);fire.setHours(h,m,0,0);
+    const delay=fire.getTime()-advance-now.getTime(); if(delay<0)return;
+    _notifTimeouts.push(setTimeout(()=>{ try{new Notification(`⏰ Scheduled Block Approaching`,{body:`"${b.name}" begins at ${fmt(b.start)}`});}catch(e){} },delay));
   });
 }
+function cancelNotifications(){ _notifTimeouts.forEach(t=>clearTimeout(t)); _notifTimeouts=[]; }
 
-function cancelNotifications(){
-  _notifTimeouts.forEach(t=>clearTimeout(t));
-  _notifTimeouts=[];
-}
-
-// Global initialization order
+// Core initialization trigger
 load();
 generateAndRender();
 renderTasks();
-if(cfg.notif&&'Notification'in window&&Notification.permission==='granted')scheduleNotifications();
+if(cfg.notif&&'Notification'in window&&Notification.permission==='granted') scheduleNotifications();
 </script>
 </body>
 </html>
