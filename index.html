@@ -6,7 +6,7 @@
 <title>Ultimate Dynamic Scheduler — Premium Master Edition</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
 <style>
-/* CRITICAL FIX: Google Font import placed at absolute top to prevent stylesheet rendering failure */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -20,7 +20,6 @@
   --shadow:0 4px 20px -2px rgba(26,26,26,0.05), 0 2px 6px -1px rgba(26,26,26,0.03);
 }
 
-/* Premium Dark Theme Overrides */
 body.dark-theme{
   --bg:#1c1c1a;--bg2:#252523;--bg3:#131311;
   --text:#f0efe9;--text2:#a0a09c;--text3:#6b6b68;
@@ -45,11 +44,9 @@ body.dark-theme .tab:hover{color:var(--text);background:rgba(255,255,255,0.02)}
 .section{display:none;animation:fadeIn 0.2s ease-out}.section.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
-/* Premium Cards */
 .card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px;box-shadow:var(--shadow)}
 .card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
 
-/* Inputs */
 input[type=text],input[type=time],input[type=number],select,textarea{
   font-size:13px;padding:10px 14px;border:1px solid var(--border2);border-radius:var(--radius);
   background:var(--bg);color:var(--text);width:100%;font-family:var(--font);outline:none;
@@ -58,7 +55,6 @@ input[type=text],input[type=time],input[type=number],select,textarea{
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
 textarea{resize:vertical;min-height:90px}
 
-/* Buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:600;padding:10px 18px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);cursor:pointer;transition:all .2s;font-family:var(--font)}
 .btn:hover{background:var(--bg2);border-color:var(--text2)}
 .btn:active{transform:scale(0.97)}
@@ -70,7 +66,6 @@ body.dark-theme .btn-primary{background:var(--text);color:var(--bg3);border-colo
 .btn-icon{padding:10px;font-size:15px;border-radius:var(--radius)}
 .btn-sm{padding:6px 12px;font-size:12px}
 
-/* Toggle Switch Styling */
 .toggle{position:relative;width:40px;height:22px;display:inline-block;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
 .slider{position:absolute;inset:0;background:var(--border2);border-radius:999px;cursor:pointer;transition:.2s}
@@ -78,7 +73,6 @@ body.dark-theme .btn-primary{background:var(--text);color:var(--bg3);border-colo
 input:checked+.slider{background:var(--accent)}
 input:checked+.slider:before{transform:translateX(18px)}
 
-/* Badges */
 .badge{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;white-space:nowrap;border:1px solid transparent}
 .t1{background:#FAECE7;color:#993C1D;border-color:rgba(216,90,48,0.15)}
 .t2{background:#E6F1FB;color:#185FA5;border-color:rgba(55,138,221,0.15)}
@@ -86,7 +80,6 @@ input:checked+.slider:before{transform:translateX(18px)}
 .t4{background:#F1EFE8;color:#5F5E5A;border-color:rgba(136,135,128,0.15)}
 .tr{background:#FBEAF0;color:#993556;border-color:rgba(212,83,126,0.15)}
 
-/* Grid Layout */
 .week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap}
 .week-title{font-size:19px;font-weight:700;letter-spacing:-0.3px}
 .week-sub{font-size:13px;color:var(--text2);margin-top:2px}
@@ -102,28 +95,24 @@ input:checked+.slider:before{transform:translateX(18px)}
 .day-head.weekend .date{color:#534AB7}
 .day-body{border:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);padding:8px;min-height:360px;background:var(--bg);flex:1;display:flex;flex-direction:column;gap:6px}
 
-/* Timeline Task Blocks */
 .block{border-radius:7px;padding:8px 10px;font-size:12px;line-height:1.4;border-left:3px solid transparent;box-shadow:0 1px 2px rgba(0,0,0,0.02);transition:transform 0.15s}
 .block:hover{transform:translateY(-1px);box-shadow:0 2px 5px rgba(0,0,0,0.05)}
 .block-name{font-weight:600;display:block}
-.block-time{font-size:10.5px;opacity:0.75;display:block;margin-top:2px;font-weight:500}
+.block-time{font-size:10.5px;color:inherit;opacity:0.85;display:block;margin-top:2px;font-weight:500}
 .legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .legend-dot{font-size:11px;padding:4px 12px;border-radius:999px;font-weight:600}
 
-/* Interactive Drag-and-Drop Rows */
 .task-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);transition:opacity 0.2s}
 .task-row:last-child{border-bottom:none}
 .task-info{flex:1;min-width:0}
 .task-name{font-size:14.5px;font-weight:600;letter-spacing:-0.1px}
 .task-meta{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
 
-/* Premium Dashboard Metrics */
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
 .stat{background:var(--bg);border:1px solid var(--border);box-shadow:var(--shadow);border-radius:var(--radius-lg);padding:18px;text-align:center}
 .stat-n{font-size:24px;font-weight:700;color:var(--text);letter-spacing:-0.5px}
 .stat-l{font-size:11px;color:var(--text2);margin-top:4px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
 
-/* Options Matrix Layouts */
 .setting-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
 .setting-row:last-child{border-bottom:none}
 .setting-label{font-size:14px;font-weight:600}
@@ -137,7 +126,6 @@ input:checked+.slider:before{transform:translateX(18px)}
 }
 .field-label{font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.03em}
 
-/* Drag List Styling */
 .priority-item{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--border);background:var(--bg2);border-radius:var(--radius);margin-bottom:6px;cursor:grab;transition:all 0.2s}
 .priority-item:active{cursor:grabbing;background:var(--bg);box-shadow:var(--shadow);transform:scale(1.01)}
 .priority-item.dragging{opacity:0.4;border-style:dashed;background:transparent}
@@ -269,10 +257,22 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
 
     <div class="card">
       <div class="card-title">Structural Constraint Block (e.g. Work hours / Fixed Shifts)</div>
-      <div class="setting-row">
-        <div><div class="setting-label">Enable Structural Shift Window</div><div class="setting-sub">Locks a specialized block completely out of your schedule on weekdays.</div></div>
-        <label class="toggle"><input type="checkbox" id="tog-school" onchange="save()"><span class="slider"></span></label>
-      </div>
+<div class="setting-row">
+  <div><div class="setting-label">Enable Structural Shift Window</div><div class="setting-sub">Locks a specialized block completely out of your schedule on selected days.</div></div>
+  <label class="toggle"><input type="checkbox" id="tog-school" onchange="save()"><span class="slider"></span></label>
+</div>
+<div style="margin-bottom: 14px;">
+  <div class="field-label">Active Shift Days</div>
+  <div style="display:flex; gap:8px; flex-wrap:wrap;" id="shift-days-container">
+    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="0" onchange="save()"> Mon</label>
+    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="1" onchange="save()"> Tue</label>
+    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="2" onchange="save()"> Wed</label>
+    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="3" onchange="save()"> Thu</label>
+    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="4" onchange="save()"> Fri</label>
+    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="5" onchange="save()"> Sat</label>
+    <label style="font-size:12px; font-weight:600;"><input type="checkbox" class="shift-day-chk" value="6" onchange="save()"> Sun</label>
+  </div>
+</div>
       <div class="grid3">
         <div><div class="field-label">Block Label Name</div><input type="text" id="t-shift-lbl" placeholder="e.g. Office Shift / School" onchange="save()"/></div>
         <div><div class="field-label">Shift Start Time</div><input type="time" id="t-leave" onchange="save()"/></div>
@@ -441,7 +441,6 @@ function applyTheme(theme){
   }
 }
 
-/* HELPER TIMING OPERATIONS */
 function fmt(t){if(!t)return'';const[h,m]=t.split(':').map(Number);const ap=h>=12?'PM':'AM';const h12=h%12||12;return m===0?`${h12}${ap}`:`${h12}:${String(m).padStart(2,'0')}${ap}`;}
 function addM(t,m){const[h,mm]=t.split(':').map(Number);const tot=h*60+mm+m;return`${String(Math.floor(tot/60)%24).padStart(2,'0')}:${String(tot%60).padStart(2,'0')}`;}
 function toMins(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
@@ -458,7 +457,6 @@ const COLORS={
   routine:{bg:'#E8F4F8',c:'#1D6F8A',border:'#3A9AD4'}
 };
 
-/* UNIVERSAL TIMELINE GAP-FILLING ALGORITHM */
 function buildDay(di){
   const isWeekend=di>=5;
   const rawFixedBlocks=[];
@@ -479,7 +477,6 @@ function buildDay(di){
     if(se > ss) rawFixedBlocks.push({name: cfg.shiftLbl, s: ss, e: se, type: 'fixed'});
   }
 
-  // Sort structural anchors and merge intersecting frames
   rawFixedBlocks.sort((a,b)=>a.s - b.s);
   const mergedFixed=[];
   for(const b of rawFixedBlocks){
@@ -501,7 +498,6 @@ function buildDay(di){
     }
   }
 
-  // Task execution sequencing tracks explicit array indexes dictated by user drag-and-drop mechanics
   const dayTasks=tasks.filter(t => t.active && !t.isReminder);
   let currentPointer = wakeM;
   const bufferGap = cfg.breakMins;
@@ -526,7 +522,6 @@ function buildDay(di){
     }
   }
 
-  // Append context-free reminders
   tasks.filter(t => t.active && t.isReminder).forEach(r => {
     if(r.days==='weekdays' && isWeekend) return;
     if(r.days==='weekends' && !isWeekend) return;
@@ -541,8 +536,8 @@ function buildDay(di){
 
 function blockEl(b){
   const col=COLORS[b.type]||COLORS[4];
-  return`<div class="block" style="background:${col.bg};border-left-color:${col.border}">
-    <span class="block-name" style="color:${col.c}">${b.name}${b.note?' 📌':''}</span>
+  return`<div class="block" style="background:${col.bg};border-left-color:${col.border};color:${col.c}">
+    <span class="block-name">${b.name}${b.note?' 📌':''}</span>
     ${b.start?`<span class="block-time">${fmt(b.start)}${b.end?' – '+fmt(b.end):''}</span>`:''}
   </div>`;
 }
@@ -613,7 +608,6 @@ function renderTasks(){
   document.getElementById('s-break').textContent=`${cfg.breakMins}m`;
 }
 
-/* PREMIUM DRAG ENGINE INTEGRATION */
 function renderPriority(){
   const pList = document.getElementById('priority-list');
   if(!pList) return;
@@ -680,7 +674,6 @@ function showTab(id,btn){
 }
 function changeWeek(d){weekOff+=d;generateAndRender();}
 
-/* PREMIUM AI GENERATIVE HOOK SIMULATION */
 async function callAI(){
   const prompt=document.getElementById('ai-prompt').value.trim();
   const btn=document.getElementById('ai-btn'); btn.disabled=true; btn.innerHTML='Thinking...';
@@ -688,16 +681,16 @@ async function callAI(){
   card.style.display='block'; result.innerHTML='<div class="ai-loading">Evaluating timeline arrays...</div>';
 
   setTimeout(() => {
-    result.textContent = `✨ USER STRATEGIC OPTIMIZATION BLUEPRINT GENERATED
+    result.textContent = `USER STRATEGIC OPTIMIZATION BLUEPRINT GENERATED
     
-🎯 Core Focal Objective: "${prompt || 'General Balanced Operations Strategy'}"
+Core Focal Objective: "${prompt || 'General Balanced Operations Strategy'}"
 
-📊 CHRONOLOGICAL MATRIX EFFICIENCY METRICS:
+CHRONOLOGICAL MATRIX EFFICIENCY METRICS:
 • Wake-to-Bed Availability: Formulated an active daily block sequence from ${cfg.wake} to ${cfg.bed}.
 • Routine Cushioning: System allocated dedicated slots for breakfast (${cfg.bfastD}m), lunch (${cfg.lunchD}m), and dinner (${cfg.dinnerD}m).
 • Flow Cushion: Dynamic task transition buffers are actively maintaining a ${cfg.breakMins}-minute cognitive cushion between cascading items.
 
-💡 ANALYTICAL ROADMAP SUGGESTIONS:
+ANALYTICAL ROADMAP SUGGESTIONS:
 1. Drag-and-drop hierarchy indicates tasks placed at the top stack claim slots instantly following your morning routine. Re-sort priorities whenever milestone targets shift.
 2. The current total time commitment scales beautifully across available placement slots. Adjust buffer durations to tighten or expand focus flexibility.`;
     btn.disabled=false; btn.innerHTML='<i class="ti ti-sparkles"></i> Generate strategic blueprint';
@@ -719,7 +712,6 @@ function getTodayTaskTimes(){
   blocks.forEach(b=>{if(b.start&&b.end&&b.name)map[b.name]={start:b.start,end:b.end};}); return map;
 }
 
-/* NOTIFICATION AGENT SUB-SYSTEM */
 let _notifTimeouts=[];
 function updateNotifUI(){
   if(!('Notification'in window)){
@@ -758,7 +750,6 @@ function scheduleNotifications(){
 }
 function cancelNotifications(){ _notifTimeouts.forEach(t=>clearTimeout(t)); _notifTimeouts=[]; }
 
-// Core initialization trigger
 load();
 generateAndRender();
 renderTasks();
