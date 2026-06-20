@@ -79,6 +79,7 @@ input:checked+.slider:before{transform:translateX(18px)}
 .t3{background:#EAF3DE;color:#3B6D11;border-color:rgba(99,153,34,0.15)}
 .t4{background:#F1EFE8;color:#5F5E5A;border-color:rgba(136,135,128,0.15)}
 .tr{background:#FBEAF0;color:#993556;border-color:rgba(212,83,126,0.15)}
+.ti-badge{background:#FFF4E5;color:#B26200;border-color:rgba(255,152,0,0.15)}
 
 .week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap}
 .week-title{font-size:19px;font-weight:700;letter-spacing:-0.3px}
@@ -198,12 +199,13 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
       <div id="task-list"></div>
       <div class="add-row">
         <div style="flex:2.5"><div class="field-label">Task name</div><input type="text" id="new-name" placeholder="e.g. Project Synthesis Research"/></div>
-        <div><div class="field-label">Priority Tier</div>
+        <div><div class="field-label">Priority Tier / Target Type</div>
           <select id="new-tier">
             <option value="1">Tier 1 — Critical Focus</option>
             <option value="2">Tier 2 — High Focus</option>
             <option value="3">Tier 3 — Medium Focus</option>
             <option value="4">Tier 4 — Low Focus</option>
+            <option value="i">Irregular / Custom Time Event</option>
             <option value="r">Visual Reminder Only</option>
           </select>
         </div>
@@ -261,45 +263,27 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
     </div>
 
     <div class="card">
-      <div class="card-title">Structural Time Commitments (Fixed Shifts & Irregular Load)</div>
-      <p style="font-size:13px; color:var(--text2); margin-bottom:16px;">
-        Lock down core time brackets (Work, Classes, or Shifts). Turn on the <strong>Irregular</strong> option if a commitment occurs on specific days but lacks a static clock window; the layout matrix will automatically reserve and inject it immediately following your first active routine or morning block.
-      </p>
-      
-      <div id="commitments-list" style="margin-bottom:24px; display:flex; flex-direction:column; gap:2px;"></div>
-
-      <div class="add-row" style="border-top:1px solid var(--border); padding-top:20px; margin-top:0;">
-        <div style="flex:2"><div class="field-label">Commitment Name</div><input type="text" id="new-c-name" placeholder="e.g. Fixed Core Shift / Chemistry Lab"/></div>
-        <div>
-          <div class="field-label">Timing Parameter</div>
-          <select id="new-c-type" onchange="toggleCommitmentTypeInputs()">
-            <option value="fixed">Fixed Clock Window</option>
-            <option value="irregular">Irregular / Sequential</option>
-          </select>
-        </div>
-        <div id="c-time-group" style="display:flex; gap:10px; flex:2;">
-          <div style="flex:1;"><div class="field-label">Start Time</div><input type="time" id="new-c-start" value="08:00"/></div>
-          <div style="flex:1;"><div class="field-label">End Time</div><input type="time" id="new-c-end" value="14:00"/></div>
-        </div>
-        <div id="c-duration-group" style="display:none; max-width:120px;">
-          <div class="field-label">Duration (Min)</div><input type="number" id="new-c-duration" value="90" min="5" max="600"/>
-        </div>
-      </div>
-
-      <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
-        <div>
-          <div class="field-label">Active Days</div>
-          <div style="display:flex; gap:6px; background:var(--bg2); padding:6px; border-radius:var(--radius); border:1px solid var(--border2);" id="new-c-days">
-            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="0" checked> M</label>
-            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="1" checked> T</label>
-            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="2" checked> W</label>
-            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="3" checked> T</label>
-            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="4" checked> F</label>
-            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="5"> S</label>
-            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="6"> S</label>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="addCommitment()"><i class="ti ti-plus"></i> Lock In Commitment</button>
+      <div class="card-title">Structural Constraint Block (e.g. Work hours / Fixed Shifts)</div>
+<div class="setting-row">
+  <div><div class="setting-label">Enable Structural Shift Window</div><div class="setting-sub">Locks a specialized block completely out of your schedule on selected days.</div></div>
+  <label class="toggle"><input type="checkbox" id="tog-school" onchange="save()"><span class="slider"></span></label>
+</div>
+<div style="margin-bottom: 14px;">
+  <div class="field-label">Active Shift Days</div>
+  <div style="display:flex; gap:8px; flex-wrap:wrap;" id="shift-days-container">
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="0" onchange="save()"> Mon</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="1" onchange="save()"> Tue</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="2" onchange="save()"> Wed</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="3" onchange="save()"> Thu</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="4" onchange="save()"> Fri</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="5" onchange="save()"> Sat</label>
+    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="6" onchange="save()"> Sun</label>
+  </div>
+</div>
+      <div class="grid3">
+        <div><div class="field-label">Block Label Name</div><input type="text" id="t-shift-lbl" placeholder="e.g. Office Shift / School" onchange="save()"/></div>
+        <div><div class="field-label">Shift Start Time</div><input type="time" id="t-leave" onchange="save()"/></div>
+        <div><div class="field-label">Shift End Time</div><input type="time" id="t-home" onchange="save()"/></div>
       </div>
     </div>
 
@@ -350,17 +334,15 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
 
 <script>
 const DEFAULT_SETTINGS={
-  wake:'06:00', bed:'22:30',
+  school:true,
+  shiftLbl:'Fixed Core Shift',
+  wake:'06:00', leave:'07:30', home:'15:00', bed:'22:30',
   breakMins:10, mPrepMins:30,
   bfastS:'07:00', bfastD:30,
   lunchS:'12:30', lunchD:40,
   dinnerS:'18:30', dinnerD:45,
   notif:false, notifAdvance:10,
-  theme:'light',
-  commitments:[
-    {id:1,name:'Fixed Core Shift',type:'fixed',start:'07:30',end:'15:00',days:[0,1,2,3,4]},
-    {id:2,name:'Irregular Lab Work',type:'irregular',duration:90,days:[1,3]}
-  ]
+  theme:'light'
 };
 
 const DEFAULT_TASKS=[
@@ -409,7 +391,11 @@ function showToast(){
 }
 
 function readFromUI(){
+  cfg.school=document.getElementById('tog-school').checked;
+  cfg.shiftLbl=document.getElementById('t-shift-lbl').value.trim() || 'Core Shift';
   cfg.wake=document.getElementById('t-wake').value||cfg.wake;
+  cfg.leave=document.getElementById('t-leave').value||cfg.leave;
+  cfg.home=document.getElementById('t-home').value||cfg.home;
   cfg.bed=document.getElementById('t-bed').value||cfg.bed;
   cfg.breakMins=parseInt(document.getElementById('t-break').value)||0;
   cfg.mPrepMins=parseInt(document.getElementById('t-mprep').value)||0;
@@ -420,10 +406,15 @@ function readFromUI(){
   cfg.dinnerS=document.getElementById('t-dinner-s').value||cfg.dinnerS;
   cfg.dinnerD=parseInt(document.getElementById('t-dinner-d').value)||0;
   cfg.notifAdvance=parseInt(document.getElementById('notif-advance').value)||10;
+  cfg.shiftDays = Array.from(document.querySelectorAll('.shift-day-chk')).filter(c => c.checked).map(c => parseInt(c.value));
 }
 
 function applyToUI(){
+  document.getElementById('tog-school').checked=cfg.school??true;
+  document.getElementById('t-shift-lbl').value=cfg.shiftLbl||'';
   document.getElementById('t-wake').value=cfg.wake||'06:00';
+  document.getElementById('t-leave').value=cfg.leave||'07:30';
+  document.getElementById('t-home').value=cfg.home||'15:00';
   document.getElementById('t-bed').value=cfg.bed||'22:30';
   document.getElementById('t-break').value=cfg.breakMins??10;
   document.getElementById('t-mprep').value=cfg.mPrepMins??30;
@@ -434,7 +425,10 @@ function applyToUI(){
   document.getElementById('t-dinner-s').value=cfg.dinnerS||'18:30';
   document.getElementById('t-dinner-d').value=cfg.dinnerD??45;
   document.getElementById('notif-advance').value=cfg.notifAdvance||10;
-  renderCommitments();
+  const sDays = cfg.shiftDays || [0,1,2,3,4]; 
+  document.querySelectorAll('.shift-day-chk').forEach(c => {
+    c.checked = sDays.includes(parseInt(c.value));
+  });
   updateNotifUI();
 }
 
@@ -472,75 +466,9 @@ const COLORS={
   4:{bg:'#F1EFE8',c:'#5F5E5A',border:'#888780'},
   r:{bg:'#FBEAF0',c:'#993556',border:'#D4537E'},
   fixed:{bg:'#EEEDFE',c:'#534AB7',border:'#7F77DD'},
-  routine:{bg:'#E8F4F8',c:'#1D6F8A',border:'#3A9AD4'}
+  routine:{bg:'#E8F4F8',c:'#1D6F8A',border:'#3A9AD4'},
+  i:{bg:'#FFF4E5',c:'#B26200',border:'#FF9800'}
 };
-
-function toggleCommitmentTypeInputs() {
-  const type = document.getElementById('new-c-type').value;
-  document.getElementById('c-time-group').style.display = type === 'fixed' ? 'flex' : 'none';
-  document.getElementById('c-duration-group').style.display = type === 'irregular' ? 'block' : 'none';
-}
-
-function renderCommitments() {
-  const list = document.getElementById('commitments-list');
-  if(!list) return;
-  if(!cfg.commitments || cfg.commitments.length === 0) {
-    list.innerHTML = `<div style="font-size:13.5px;color:var(--text2);text-align:center;padding:16px">No time commitments mapped out yet.</div>`;
-    return;
-  }
-  list.innerHTML = cfg.commitments.map(c => {
-    const dayNames = c.days.map(d => ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d]).join(', ');
-    const detailBadge = c.type === 'fixed' 
-      ? `<span class="badge t2"><i class="ti ti-clock"></i> ${fmt(c.start)} – ${fmt(c.end)}</span>`
-      : `<span class="badge tr"><i class="ti ti-arrows-split-2"></i> Irregular (${c.duration} mins)</span>`;
-    return `<div class="task-row" style="padding:10px 0;">
-      <div class="task-info">
-        <div class="task-name" style="font-size:14px;">${c.name}</div>
-        <div class="task-meta" style="margin-top:4px;">
-          ${detailBadge}
-          <span style="font-size:11px;color:var(--text2); text-transform:capitalize"><i class="ti ti-calendar"></i> ${dayNames}</span>
-        </div>
-      </div>
-      <button class="btn btn-sm btn-danger" onclick="removeCommitment(${c.id})"><i class="ti ti-trash"></i></button>
-    </div>`;
-  }).join('');
-}
-
-function addCommitment() {
-  const name = document.getElementById('new-c-name').value.trim();
-  if(!name) return;
-  const type = document.getElementById('new-c-type').value;
-  const days = Array.from(document.querySelectorAll('#new-c-days input')).filter(c=>c.checked).map(c=>parseInt(c.value));
-  if(days.length === 0) { alert('Please choose at least one calendar day.'); return; }
-
-  let entry = { id: Date.now(), name, type, days };
-  if(type === 'fixed') {
-    entry.start = document.getElementById('new-c-start').value || '08:00';
-    entry.end = document.getElementById('new-c-end').value || '14:00';
-    if(toMins(entry.end) <= toMins(entry.start)) { alert('End time must sequence after start time.'); return; }
-  } else {
-    entry.duration = parseInt(document.getElementById('new-c-duration').value) || 60;
-  }
-
-  if(!cfg.commitments) cfg.commitments = [];
-  cfg.commitments.push(entry);
-  document.getElementById('new-c-name').value = '';
-  
-  localStorage.setItem('master-cfg', JSON.stringify(cfg));
-  showToast();
-  renderCommitments();
-  generateAndRender();
-}
-
-function removeCommitment(id) {
-  if(confirm('Purge this operational time commitment constraint?')) {
-    cfg.commitments = cfg.commitments.filter(c => c.id !== id);
-    localStorage.setItem('master-cfg', JSON.stringify(cfg));
-    showToast();
-    renderCommitments();
-    generateAndRender();
-  }
-}
 
 function buildDay(di){
   const isWeekend=di>=5;
@@ -557,14 +485,20 @@ function buildDay(di){
   if(cfg.lunchD > 0) { const ls = toMins(cfg.lunchS); rawFixedBlocks.push({name:'Lunch Window', s: ls, e: ls + cfg.lunchD, type:'routine'}); }
   if(cfg.dinnerD > 0) { const ds = toMins(cfg.dinnerS); rawFixedBlocks.push({name:'Dinner Window', s: ds, e: ds + cfg.dinnerD, type:'routine'}); }
 
-  // Inject Fixed Structural Commitments first
-  if(cfg.commitments && Array.isArray(cfg.commitments)) {
-    cfg.commitments.forEach(c => {
-      if(c.type === 'fixed' && c.days.includes(di)) {
-        const ss = toMins(c.start); const se = toMins(c.end);
-        if(se > ss) rawFixedBlocks.push({name: c.name, s: ss, e: se, type: 'fixed'});
-      }
-    });
+  const sDays = cfg.shiftDays || [0,1,2,3,4];
+  if(cfg.school && sDays.includes(di)) {
+    const ss = toMins(cfg.leave); const se = toMins(cfg.home);
+    if(se > ss) rawFixedBlocks.push({name: cfg.shiftLbl, s: ss, e: se, type: 'fixed'});
+  }
+
+  const irregularTasks = tasks.filter(t => t.active && t.tier === 'i');
+  for(const task of irregularTasks) {
+    if(Array.isArray(task.days) && !task.days.includes(di)) continue;
+    if(task.time) {
+      const ts = toMins(task.time);
+      const te = ts + task.mins;
+      rawFixedBlocks.push({name: task.name, s: ts, e: te, type: 'i'});
+    }
   }
 
   rawFixedBlocks.sort((a,b)=>a.s - b.s);
@@ -581,35 +515,6 @@ function buildDay(di){
     }
   }
 
-  // Inject Irregular Commitments sequentially (places right after breakfast or the first major fixed block finishes)
-  const bfastEnd = toMins(cfg.bfastS) + cfg.bfastD;
-  let irrPointer = Math.max(wakeM, bfastEnd);
-
-  if(cfg.commitments && Array.isArray(cfg.commitments)) {
-    const dayFixed = cfg.commitments.filter(c => c.type === 'fixed' && c.days.includes(di));
-    if(dayFixed.length > 0) {
-      const maxFixedEnd = Math.max(...dayFixed.map(c => toMins(c.end)));
-      irrPointer = Math.max(irrPointer, maxFixedEnd);
-    }
-
-    const dayIrregulars = cfg.commitments.filter(c => c.type === 'irregular' && c.days.includes(di));
-    for(const irr of dayIrregulars) {
-      let placed = false;
-      while(!placed && irrPointer < bedM) {
-        const prospectiveEnd = irrPointer + irr.duration;
-        const collision = mergedFixed.find(f => (irrPointer < f.e && prospectiveEnd > f.s));
-        if(!collision && prospectiveEnd <= bedM) {
-          mergedFixed.push({name: irr.name, s: irrPointer, e: prospectiveEnd, type: 'fixed'});
-          mergedFixed.sort((a,b) => a.s - b.s);
-          irrPointer = prospectiveEnd;
-          placed = true;
-        } else if(collision) {
-          irrPointer = collision.e;
-        } else { break; }
-      }
-    }
-  }
-
   const timelineBlocks = [];
   for(const f of mergedFixed){
     if(f.s >= wakeM && f.e <= bedM) {
@@ -617,7 +522,8 @@ function buildDay(di){
     }
   }
 
-  const dayTasks=tasks.filter(t => t.active && !t.isReminder);
+  const dayTasks=tasks.filter(t => t.active && !t.isReminder && t.tier !== 'i');
+  const bfastEnd = toMins(cfg.bfastS) + cfg.bfastD;
   let currentPointer = Math.max(wakeM, bfastEnd);
   const bufferGap = cfg.breakMins;
 
@@ -650,6 +556,13 @@ function buildDay(di){
     timelineBlocks.push({name: r.name, start: '', end: '', type: 'r', note: '📌'});
   });
 
+  for(const task of irregularTasks) {
+    if(Array.isArray(task.days) && !task.days.includes(di)) continue;
+    if(!task.time) {
+      timelineBlocks.push({name: task.name, start: '', end: '', type: 'i', note: '⏳ (Time Undecided)'});
+    }
+  }
+
   return timelineBlocks.sort((a,b)=> {
     if(!a.start) return 1; if(!b.start) return -1;
     return toMins(a.start) - toMins(b.start);
@@ -659,7 +572,7 @@ function buildDay(di){
 function blockEl(b){
   const col=COLORS[b.type]||COLORS[4];
   return`<div class="block" style="background:${col.bg};border-left-color:${col.border};color:${col.c}">
-    <span class="block-name">${b.name}${b.note?' 📌':''}</span>
+    <span class="block-name">${b.name}${b.note?' '+b.note:''}</span>
     ${b.start?`<span class="block-time" style="color:${col.c}">${fmt(b.start)}${b.end?' – '+fmt(b.end):''}</span>`:''}
   </div>`;
 }
@@ -690,7 +603,7 @@ function generateAndRender(){
 function renderLegend(){
   const items=[
     {n:'Fixed Constraints',t:'fixed'},{n:'Meal / Routines',t:'routine'},
-    {n:'Tier 1 Focus',t:1},{n:'Tier 2 Focus',t:2},{n:'Tier 3 Focus',t:3},{n:'Visual Reminders',t:'r'},
+    {n:'Tier 1 Focus',t:1},{n:'Tier 2 Focus',t:2},{n:'Tier 3 Focus',t:3},{n:'Irregular / Custom',t:'i'},{n:'Visual Reminders',t:'r'},
   ];
   document.getElementById('legend').innerHTML=items.map(it=>{
     const c=COLORS[it.t]||COLORS[4];
@@ -703,12 +616,28 @@ function renderTasks(){
   if(!list)return;
   const todayTimes=getTodayTaskTimes();
   list.innerHTML=tasks.map(t=>{
-    const badgeCls=t.tier===1?'t1':t.tier===2?'t2':t.tier===3?'t3':t.tier==='r'?'tr':'t4';
-    const label=t.tier==='r'?'Reminder Block':`Tier ${t.tier}`;
+    let badgeCls='t4'; let label=`Tier ${t.tier}`;
+    if(t.tier===1) badgeCls='t1';
+    else if(t.tier===2) badgeCls='t2';
+    else if(t.tier===3) badgeCls='t3';
+    else if(t.tier==='r') { badgeCls='tr'; label='Reminder Block'; }
+    else if(t.tier==='i') { badgeCls='ti-badge'; label='Irregular Event'; }
+
     const sched=todayTimes[t.name];
-    const schedHtml=t.isReminder?'':sched
-      ?`<span class="task-sched"><i class="ti ti-clock"></i> Slots Today ${fmt(sched.start)}–${fmt(sched.end)}</span>`
-      :`<span class="task-sched skip">No Active Match Today</span>`;
+    let schedHtml='';
+    if(t.isReminder){
+      schedHtml='';
+    } else if(t.tier==='i'){
+      schedHtml=`<div style="display:inline-flex;align-items:center;gap:6px;background:var(--bg2);padding:2px 8px;border-radius:var(--radius);border:1px solid var(--border2)">
+        <span style="font-size:11px;font-weight:600;color:var(--text2)"><i class="ti ti-clock"></i> Set Execution Time:</span>
+        <input type="time" value="${t.time||''}" onchange="updateIrregularTime(${t.id}, this.value)" style="width:auto;padding:2px 4px;font-size:11.5px;border-radius:4px;border:1px solid var(--border2);height:24px;background:var(--bg);color:var(--text);"/>
+      </div>`;
+    } else {
+      schedHtml=sched
+        ?`<span class="task-sched"><i class="ti ti-clock"></i> Slots Today ${fmt(sched.start)}–${fmt(sched.end)}</span>`
+        :`<span class="task-sched skip">No Active Match Today</span>`;
+    }
+
     return`<div class="task-row" style="opacity:${t.active?1:0.45}">
       <div class="task-info">
         <div class="task-name">${t.name}</div>
@@ -727,16 +656,26 @@ function renderTasks(){
     </div>`;
   }).join('');
   const active=tasks.filter(t=>t.active);
-  const totalMins=active.filter(t=>!t.isReminder).reduce((s,t)=>s+t.mins,0);
+  const totalMins=active.filter(t=>!t.isReminder && t.tier!=='i').reduce((s,t)=>s+t.mins,0);
   document.getElementById('s-tasks').textContent=active.length;
   document.getElementById('s-time').textContent=mh(totalMins);
   document.getElementById('s-break').textContent=`${cfg.breakMins}m`;
 }
 
+function updateIrregularTime(id, val){
+  const t=tasks.find(x=>x.id===id);
+  if(t){
+    t.time=val;
+    save();
+    renderTasks();
+    generateAndRender();
+  }
+}
+
 function renderPriority(){
   const pList = document.getElementById('priority-list');
   if(!pList) return;
-  const activeFloating=tasks.filter(t=>t.active && !t.isReminder);
+  const activeFloating=tasks.filter(t=>t.active && !t.isReminder && t.tier !== 'i');
   if(activeFloating.length===0){
     pList.innerHTML=`<div style="font-size:13.5px;color:var(--text2);text-align:center;padding:20px">No active floating targets found to sequence.</div>`;
     return;
@@ -778,7 +717,7 @@ function initDragLoop(e) {
 function addTask(){
   const name=document.getElementById('new-name').value.trim(); if(!name)return;
   const tierRaw=document.getElementById('new-tier').value;
-  const tier=tierRaw==='r'?'r':parseInt(tierRaw);
+  const tier=tierRaw==='r'?'r':tierRaw==='i'?'i':parseInt(tierRaw);
   const mins=tier==='r'?0:parseInt(document.getElementById('new-mins').value)||30;
   
   const days = Array.from(document.querySelectorAll('#new-task-days input')).filter(c=>c.checked).map(c=>parseInt(c.value));
@@ -791,7 +730,8 @@ function addTask(){
     mins: mins,
     active: true,
     days: days, 
-    isReminder: tier==='r'
+    isReminder: tier==='r',
+    time: tier==='i'?'':undefined
   });
   
   document.getElementById('new-name').value='';
@@ -810,7 +750,6 @@ function showTab(id,btn){
   if(id==='tasks') renderTasks();
   if(id==='priority') renderPriority();
   if(id==='calendar') generateAndRender();
-  if(id==='settings') renderCommitments();
 }
 function changeWeek(d){weekOff+=d;generateAndRender();}
 
@@ -820,6 +759,9 @@ async function callAI(){
   const card=document.getElementById('ai-card'); const result=document.getElementById('ai-result');
   card.style.display='block'; result.innerHTML='<div class="ai-loading">Evaluating timeline arrays...</div>';
 
+  const taskCtx=[...tasks].filter(t=>t.active).sort((a,b)=>(typeof a.tier==='number'?a.tier:9)-(typeof b.tier==='number'?b.tier:9))
+    .map(t=>`- ${t.name} (${t.tier==='r'?'reminder':(t.tier==='i'?'irregular':'Tier '+t.tier)}, ${t.mins}min/day, Days: ${Array.isArray(t.days) ? t.days.map(d => ['M','T','W','Th','F','Sa','Su'][d]).join(',') : t.days})`).join('\n');
+
   setTimeout(() => {
     result.textContent = `USER STRATEGIC OPTIMIZATION BLUEPRINT GENERATED
     
@@ -828,14 +770,17 @@ Core Focal Objective: "${prompt || 'General Balanced Operations Strategy'}"
 CHRONOLOGICAL MATRIX EFFICIENCY METRICS:
 • Wake-to-Bed Availability: Formulated an active daily block sequence from ${cfg.wake} to ${cfg.bed}.
 • Routine Cushioning: System allocated dedicated slots for breakfast (${cfg.bfastD}m), lunch (${cfg.lunchD}m), and dinner (${cfg.dinnerD}m).
-• Multi-Commitment Lock: The engine dynamically protected all custom fixed and irregular structural blocks before processing floating metrics.
-• Flow Cushion: Dynamic task transition buffers are actively maintaining a ${cfg.breakMins}-minute cognitive cushion between cascading items.`;
+• Flow Cushion: Dynamic task transition buffers are actively maintaining a ${cfg.breakMins}-minute cognitive cushion between cascading items.
+
+ANALYTICAL ROADMAP SUGGESTIONS:
+1. Drag-and-drop hierarchy indicates tasks placed at the top stack claim slots instantly following your morning routine. Re-sort priorities whenever milestone targets shift.
+2. The current total time commitment scales beautifully across available placement slots. Adjust buffer durations to tighten or expand focus flexibility.`;
     btn.disabled=false; btn.innerHTML='<i class="ti ti-sparkles"></i> Generate strategic blueprint';
   }, 1100);
 }
 
 function exportData(){
-  const blob=new Blob([JSON.stringify({settings:cfg,tasks,version:'Master-3.5'},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({settings:cfg,tasks,version:'Master-3.1'},null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='universal-master-schedule.json';a.click();
 }
 function resetAll(){
