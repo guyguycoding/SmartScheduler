@@ -150,8 +150,8 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
 .theme-toggle-btn{background:var(--bg);border:1px solid var(--border2);color:var(--text);cursor:pointer;padding:8px 12px;border-radius:var(--radius);font-size:14px;display:flex;align-items:center;gap:6px;font-weight:600}
 .theme-toggle-btn:hover{background:var(--bg2)}
 
-.time-picker-wrapper {display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--text2)}
-.time-picker-wrapper input[type=time] {padding:4px 8px; width:auto; font-size:12px}
+.time-picker-wrapper {display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--text2); background:var(--bg2); padding:2px 8px; border-radius:var(--radius); border:1px solid var(--border2)}
+.time-picker-wrapper input[type=time] {padding:2px 4px; width:auto; font-size:11.5px; border-radius:4px; border:1px solid var(--border2); height:24px; background:var(--bg); color:var(--text)}
 </style>
 </head>
 <body>
@@ -208,7 +208,6 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
             <option value="2">Tier 2 — High Focus</option>
             <option value="3">Tier 3 — Medium Focus</option>
             <option value="4">Tier 4 — Low Focus</option>
-            <option value="irr">Irregular / Custom Event</option>
             <option value="r">Visual Reminder Only</option>
           </select>
         </div>
@@ -266,27 +265,45 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
     </div>
 
     <div class="card">
-      <div class="card-title">Structural Constraint Block (e.g. Work hours / Fixed Shifts)</div>
-<div class="setting-row">
-  <div><div class="setting-label">Enable Structural Shift Window</div><div class="setting-sub">Locks a specialized block completely out of your schedule on selected days.</div></div>
-  <label class="toggle"><input type="checkbox" id="tog-school" onchange="save()"><span class="slider"></span></label>
-</div>
-<div style="margin-bottom: 14px;">
-  <div class="field-label">Active Shift Days</div>
-  <div style="display:flex; gap:8px; flex-wrap:wrap;" id="shift-days-container">
-    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="0" onchange="save()"> Mon</label>
-    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="1" onchange="save()"> Tue</label>
-    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="2" onchange="save()"> Wed</label>
-    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="3" onchange="save()"> Thu</label>
-    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="4" onchange="save()"> Fri</label>
-    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="5" onchange="save()"> Sat</label>
-    <label style="font-size:12px; font-weight:600; cursor:pointer"><input type="checkbox" class="shift-day-chk" value="6" onchange="save()"> Sun</label>
-  </div>
-</div>
-      <div class="grid3">
-        <div><div class="field-label">Block Label Name</div><input type="text" id="t-shift-lbl" placeholder="e.g. Office Shift / School" onchange="save()"/></div>
-        <div><div class="field-label">Shift Start Time</div><input type="time" id="t-leave" onchange="save()"/></div>
-        <div><div class="field-label">Shift End Time</div><input type="time" id="t-home" onchange="save()"/></div>
+      <div class="card-title">Structural Time Commitments (Fixed Shifts & Irregular Windows)</div>
+      <p style="font-size:13px; color:var(--text2); margin-bottom:16px;">
+        Add hard constraints like work shifts, classes, or appointments. If the event is <strong>Irregular</strong> (e.g. you know the duration, but the time is undecided until later), select Irregular. It will show up on your calendar as <em>Undecided</em> until you confirm the exact time here.
+      </p>
+      
+      <div id="commitments-list" style="margin-bottom:20px; display:flex; flex-direction:column; gap:4px;"></div>
+      
+      <div class="add-row">
+        <div style="flex:2"><div class="field-label">Commitment Name</div><input type="text" id="new-c-name" placeholder="e.g. School, Surf Training, Doctor"/></div>
+        <div>
+          <div class="field-label">Commitment Type</div>
+          <select id="new-c-type" onchange="toggleCommitmentType(this.value)">
+            <option value="fixed">Fixed Time</option>
+            <option value="irregular">Irregular (Undecided Time)</option>
+          </select>
+        </div>
+        <div id="c-fixed-opts" style="display:flex; gap:10px; flex:2;">
+          <div style="flex:1"><div class="field-label">Start Time</div><input type="time" id="new-c-start" value="08:00"/></div>
+          <div style="flex:1"><div class="field-label">End Time</div><input type="time" id="new-c-end" value="15:00"/></div>
+        </div>
+        <div id="c-irr-opts" style="display:none; max-width:120px;">
+          <div class="field-label">Duration (Min)</div><input type="number" id="new-c-duration" value="90"/>
+        </div>
+      </div>
+
+      <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
+        <div>
+          <div class="field-label">Active Days</div>
+          <div style="display:flex; gap:6px; background:var(--bg2); padding:6px; border-radius:var(--radius); border:1px solid var(--border2);" id="new-c-days">
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="0" checked> M</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="1" checked> T</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="2" checked> W</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="3" checked> T</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="4" checked> F</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="5"> S</label>
+            <label style="font-size:11px; font-weight:600; cursor:pointer"><input type="checkbox" value="6"> S</label>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addCommitment()"><i class="ti ti-plus"></i> Lock In Commitment</button>
       </div>
     </div>
 
@@ -320,7 +337,7 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
     <div class="card">
       <div class="card-title">AI-Powered Strategic Weekly Roadmap</div>
       <p style="font-size:13.5px;color:var(--text2);margin-bottom:16px">Supply your focal points for the week. The client engine dynamically evaluates your configured meal brackets, buffers, and floating assignments to plot an analytical optimization roadmap.</p>
-      <textarea id="ai-prompt" placeholder="e.g. My energy targets spike in the evening windows. Make sure critical items prioritize later slots and optimize tracking parameters..."></textarea>
+      <textarea id="ai-prompt" placeholder="e.g. Focus heavily on early morning productivity, prioritize critical milestones, and ensure balanced spacing across the week..."></textarea>
       <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
         <button class="btn btn-primary" id="ai-btn" onclick="callAI()"><i class="ti ti-sparkles"></i> Generate strategic blueprint</button>
         <button class="btn" onclick="generateAndRender();showTab('calendar',document.querySelector('.tab'))"><i class="ti ti-calendar"></i> Return to layout grid</button>
@@ -337,23 +354,24 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
 
 <script>
 const DEFAULT_SETTINGS={
-  school:true,
-  shiftLbl:'Fixed Core Shift',
-  wake:'06:00', leave:'07:30', home:'15:00', bed:'22:30',
+  wake:'06:00', bed:'22:30',
   breakMins:10, mPrepMins:30,
   bfastS:'07:00', bfastD:30,
   lunchS:'12:30', lunchD:40,
   dinnerS:'18:30', dinnerD:45,
   notif:false, notifAdvance:10,
-  theme:'light'
+  theme:'light',
+  commitments: [
+    { id: 1, name: 'Fixed Core Shift', type: 'fixed', start: '07:30', end: '15:00', days: [0,1,2,3,4] }
+  ]
 };
 
 const DEFAULT_TASKS=[
-  {id:1,name:'Priority Deep Work Sprint',tier:1,mins:60,active:true,days:[0,1,2,3,4],isReminder:false,confirmedTime:''},
-  {id:2,name:'Technical Revision Slot',tier:2,mins:45,active:true,days:[0,1,2,3,4,5,6],isReminder:false,confirmedTime:''},
-  {id:3,name:'Creative & Open Research',tier:3,mins:45,active:true,days:[0,2,4],isReminder:false,confirmedTime:''},
-  {id:4,name:'Administrative & Email Cleanout',tier:4,mins:30,active:true,days:[0,1,2,3,4,5,6],isReminder:false,confirmedTime:''},
-  {id:5,name:'Weekly Strategic Horizon Audit',tier:'r',mins:0,active:true,days:[5,6],isReminder:true,confirmedTime:''}
+  {id:1,name:'Priority Deep Work Sprint',tier:1,mins:60,active:true,days:[0,1,2,3,4],isReminder:false},
+  {id:2,name:'Technical Revision Slot',tier:2,mins:45,active:true,days:[0,1,2,3,4,5,6],isReminder:false},
+  {id:3,name:'Creative & Open Research',tier:3,mins:45,active:true,days:[0,2,4],isReminder:false},
+  {id:4,name:'Administrative & Email Cleanout',tier:4,mins:30,active:true,days:[0,1,2,3,4,5,6],isReminder:false},
+  {id:5,name:'Weekly Strategic Horizon Audit',tier:'r',mins:0,active:true,days:[5,6],isReminder:true}
 ];
 
 let cfg={};let tasks=[];let weekOff=0;let nextId=10;
@@ -362,6 +380,7 @@ function load(){
   try {
     const rawCfg = localStorage.getItem('master-cfg');
     cfg = rawCfg ? Object.assign({...DEFAULT_SETTINGS}, JSON.parse(rawCfg)) : {...DEFAULT_SETTINGS};
+    if(!cfg.commitments) cfg.commitments = [...DEFAULT_SETTINGS.commitments];
   } catch(e) { cfg = {...DEFAULT_SETTINGS}; }
   
   try {
@@ -387,15 +406,6 @@ function save(){
   updateNotifUI();
 }
 
-function updateTaskConfirmedTime(id, val) {
-  const t = tasks.find(x => x.id === id);
-  if (t) {
-    t.confirmedTime = val;
-    save();
-    if (document.getElementById('tab-tasks').classList.contains('active')) renderTasks();
-  }
-}
-
 function showToast(){
   const t=document.getElementById('toast');
   t.style.opacity='1'; t.style.transform='translateY(0)';
@@ -403,11 +413,7 @@ function showToast(){
 }
 
 function readFromUI(){
-  cfg.school=document.getElementById('tog-school').checked;
-  cfg.shiftLbl=document.getElementById('t-shift-lbl').value.trim() || 'Core Shift';
   cfg.wake=document.getElementById('t-wake').value||cfg.wake;
-  cfg.leave=document.getElementById('t-leave').value||cfg.leave;
-  cfg.home=document.getElementById('t-home').value||cfg.home;
   cfg.bed=document.getElementById('t-bed').value||cfg.bed;
   cfg.breakMins=parseInt(document.getElementById('t-break').value)||0;
   cfg.mPrepMins=parseInt(document.getElementById('t-mprep').value)||0;
@@ -418,15 +424,10 @@ function readFromUI(){
   cfg.dinnerS=document.getElementById('t-dinner-s').value||cfg.dinnerS;
   cfg.dinnerD=parseInt(document.getElementById('t-dinner-d').value)||0;
   cfg.notifAdvance=parseInt(document.getElementById('notif-advance').value)||10;
-  cfg.shiftDays = Array.from(document.querySelectorAll('.shift-day-chk')).filter(c => c.checked).map(c => parseInt(c.value));
 }
 
 function applyToUI(){
-  document.getElementById('tog-school').checked=cfg.school??true;
-  document.getElementById('t-shift-lbl').value=cfg.shiftLbl||'';
   document.getElementById('t-wake').value=cfg.wake||'06:00';
-  document.getElementById('t-leave').value=cfg.leave||'07:30';
-  document.getElementById('t-home').value=cfg.home||'15:00';
   document.getElementById('t-bed').value=cfg.bed||'22:30';
   document.getElementById('t-break').value=cfg.breakMins??10;
   document.getElementById('t-mprep').value=cfg.mPrepMins??30;
@@ -437,10 +438,7 @@ function applyToUI(){
   document.getElementById('t-dinner-s').value=cfg.dinnerS||'18:30';
   document.getElementById('t-dinner-d').value=cfg.dinnerD??45;
   document.getElementById('notif-advance').value=cfg.notifAdvance||10;
-  const sDays = cfg.shiftDays || [0,1,2,3,4]; 
-  document.querySelectorAll('.shift-day-chk').forEach(c => {
-    c.checked = sDays.includes(parseInt(c.value));
-  });
+  renderCommitments();
   updateNotifUI();
 }
 
@@ -466,7 +464,6 @@ function applyTheme(theme){
 }
 
 function fmt(t){if(!t)return'';const[h,m]=t.split(':').map(Number);const ap=h>=12?'PM':'AM';const h12=h%12||12;return m===0?`${h12}${ap}`:`${h12}:${String(m).padStart(2,'0')}${ap}`;}
-function addM(t,m){const[h,mm]=t.split(':').map(Number);const tot=h*60+mm+m;return`${String(Math.floor(tot/60)%24).padStart(2,'0')}:${String(tot%60).padStart(2,'0')}`;}
 function toMins(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
 function minsToTime(m){return`${String(Math.floor(m/60)%24).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;}
 function mh(m){return m>=60?`${Math.round(m/60*10)/10}h`:`${m}m`;}
@@ -481,6 +478,100 @@ const COLORS={
   fixed:{bg:'#EEEDFE',c:'#534AB7',border:'#7F77DD'},
   routine:{bg:'#E8F4F8',c:'#1D6F8A',border:'#3A9AD4'}
 };
+
+/* --- COMMITMENTS ENGINE (TIME BLOCKS TAB) --- */
+
+function toggleCommitmentType(val) {
+  document.getElementById('c-fixed-opts').style.display = val === 'fixed' ? 'flex' : 'none';
+  document.getElementById('c-irr-opts').style.display = val === 'irregular' ? 'block' : 'none';
+}
+
+function renderCommitments() {
+  const list = document.getElementById('commitments-list');
+  if(!list) return;
+  if(!cfg.commitments || cfg.commitments.length === 0) {
+    list.innerHTML = `<div style="font-size:13px; color:var(--text2); text-align:center; padding:16px;">No structural commitments mapped out yet.</div>`;
+    return;
+  }
+  list.innerHTML = cfg.commitments.map(c => {
+    const daysStr = c.days.map(d => ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d]).join(', ');
+    let timeUi = '';
+    
+    if(c.type === 'fixed') {
+      timeUi = `<span class="badge t2"><i class="ti ti-clock"></i> ${fmt(c.start)} – ${fmt(c.end)}</span>`;
+    } else {
+      timeUi = `
+        <span class="time-picker-wrapper">
+          <span style="font-weight:600;"><i class="ti ti-clock-bolt"></i> Confirm Time:</span>
+          <input type="time" value="${c.confirmedTime||''}" onchange="updateCommitmentTime(${c.id}, this.value)">
+          ${!c.confirmedTime ? '<span style="color:#B26A00;font-weight:600">(Undecided)</span>' : ''}
+        </span>
+        <span class="badge ti-irr">${c.duration} mins</span>`;
+    }
+    
+    return `
+    <div class="task-row" style="padding:12px 0;">
+      <div class="task-info">
+        <div class="task-name" style="font-size:14px;">${c.name}</div>
+        <div class="task-meta" style="margin-top:6px;">
+          ${timeUi}
+          <span style="font-size:11px;color:var(--text2);"><i class="ti ti-calendar"></i> ${daysStr}</span>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-danger" onclick="removeCommitment(${c.id})"><i class="ti ti-trash"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function addCommitment() {
+  const name = document.getElementById('new-c-name').value.trim();
+  if(!name) return;
+  const type = document.getElementById('new-c-type').value;
+  const days = Array.from(document.querySelectorAll('#new-c-days input:checked')).map(n=>parseInt(n.value));
+  if(days.length === 0) { alert('Please select at least one active day.'); return; }
+
+  const entry = { id: Date.now(), name, type, days };
+  if(type === 'fixed') {
+    entry.start = document.getElementById('new-c-start').value || '08:00';
+    entry.end = document.getElementById('new-c-end').value || '15:00';
+    if(toMins(entry.end) <= toMins(entry.start)) { alert('End time must be after start time.'); return; }
+  } else {
+    entry.duration = parseInt(document.getElementById('new-c-duration').value) || 60;
+    entry.confirmedTime = '';
+  }
+
+  if(!cfg.commitments) cfg.commitments = [];
+  cfg.commitments.push(entry);
+  document.getElementById('new-c-name').value = '';
+  
+  localStorage.setItem('master-cfg', JSON.stringify(cfg));
+  showToast();
+  renderCommitments();
+  generateAndRender();
+}
+
+function removeCommitment(id) {
+  if(confirm('Delete this structural constraint?')) {
+    cfg.commitments = cfg.commitments.filter(c => c.id !== id);
+    localStorage.setItem('master-cfg', JSON.stringify(cfg));
+    showToast();
+    renderCommitments();
+    generateAndRender();
+  }
+}
+
+function updateCommitmentTime(id, val) {
+  const c = cfg.commitments.find(x => x.id === id);
+  if(c) {
+    c.confirmedTime = val;
+    localStorage.setItem('master-cfg', JSON.stringify(cfg));
+    showToast();
+    renderCommitments();
+    generateAndRender();
+  }
+}
+
+/* --- CALENDAR BUILDER --- */
 
 function buildDay(di){
   const isWeekend=di>=5;
@@ -497,19 +588,20 @@ function buildDay(di){
   if(cfg.lunchD > 0) { const ls = toMins(cfg.lunchS); rawFixedBlocks.push({name:'Lunch Window', s: ls, e: ls + cfg.lunchD, type:'routine'}); }
   if(cfg.dinnerD > 0) { const ds = toMins(cfg.dinnerS); rawFixedBlocks.push({name:'Dinner Window', s: ds, e: ds + cfg.dinnerD, type:'routine'}); }
 
-  const sDays = cfg.shiftDays || [0,1,2,3,4];
-  if(cfg.school && sDays.includes(di)) {
-    const ss = toMins(cfg.leave); const se = toMins(cfg.home);
-    if(se > ss) rawFixedBlocks.push({name: cfg.shiftLbl, s: ss, e: se, type: 'fixed'});
+  // Inject user's structural commitments (Fixed & Confirmed Irregulars)
+  if(cfg.commitments) {
+    cfg.commitments.forEach(c => {
+      if(c.days.includes(di)) {
+        if(c.type === 'fixed') {
+          const ss = toMins(c.start); const se = toMins(c.end);
+          if(se > ss) rawFixedBlocks.push({name: c.name, s: ss, e: se, type: 'fixed'});
+        } else if(c.type === 'irregular' && c.confirmedTime) {
+          const ss = toMins(c.confirmedTime); const se = ss + c.duration;
+          rawFixedBlocks.push({name: c.name, s: ss, e: se, type: 'irr'});
+        }
+      }
+    });
   }
-
-  // Inject confirmed irregular events as HARD constraints instantly
-  tasks.filter(t => t.active && t.tier === 'irr' && t.confirmedTime).forEach(task => {
-    if (Array.isArray(task.days) && task.days.includes(di)) {
-      const startM = toMins(task.confirmedTime);
-      rawFixedBlocks.push({name: task.name, s: startM, e: startM + task.mins, type: 'fixed', customType: 'irr'});
-    }
-  });
 
   rawFixedBlocks.sort((a,b)=>a.s - b.s);
   const mergedFixed=[];
@@ -520,7 +612,7 @@ function buildDay(di){
       if(b.s < prev.e) {
         prev.e = Math.max(prev.e, b.e);
         if(b.type === 'fixed') prev.type = 'fixed';
-        if(b.customType === 'irr') prev.customType = 'irr';
+        if(b.type === 'irr') prev.type = 'irr';
         prev.name = prev.name.includes(b.name) ? prev.name : prev.name + ' & ' + b.name;
       } else { mergedFixed.push(b); }
     }
@@ -529,12 +621,12 @@ function buildDay(di){
   const timelineBlocks = [];
   for(const f of mergedFixed){
     if(f.s >= wakeM && f.e <= bedM) {
-      timelineBlocks.push({name: f.name, start: minsToTime(f.s), end: minsToTime(f.e), type: f.customType || f.type});
+      timelineBlocks.push({name: f.name, start: minsToTime(f.s), end: minsToTime(f.e), type: f.type});
     }
   }
 
-  // Filter tasks out that are reminders or irregular events
-  const dayTasks=tasks.filter(t => t.active && t.isReminder !== true && t.tier !== 'irr');
+  // Floating tasks mapping (Strictly after breakfast ends)
+  const dayTasks=tasks.filter(t => t.active && !t.isReminder);
   const bfastEnd = toMins(cfg.bfastS) + cfg.bfastD;
   let currentPointer = Math.max(wakeM, bfastEnd);
   const bufferGap = cfg.breakMins;
@@ -557,12 +649,14 @@ function buildDay(di){
     }
   }
 
-  // Render Undecided Unconfirmed Irregular events
-  tasks.filter(t => t.active && t.tier === 'irr' && !t.confirmedTime).forEach(task => {
-    if (Array.isArray(task.days) && task.days.includes(di)) {
-      timelineBlocks.push({name: task.name, start: '', end: '', type: 'irr', note: '⏳ Time Undecided'});
-    }
-  });
+  // Add Undecided Irregular events to timeline purely as visuals
+  if(cfg.commitments) {
+    cfg.commitments.forEach(c => {
+      if(c.days.includes(di) && c.type === 'irregular' && !c.confirmedTime) {
+        timelineBlocks.push({name: c.name, start: '', end: '', type: 'irr', note: '⏳ Time Undecided'});
+      }
+    });
+  }
 
   tasks.filter(t => t.active && t.isReminder).forEach(r => {
     if(Array.isArray(r.days) && !r.days.includes(di)) return;
@@ -578,9 +672,7 @@ function buildDay(di){
 function blockEl(b){
   const col=COLORS[b.type]||COLORS[4];
   let metaDisplay = b.start ? `${fmt(b.start)}${b.end?' – '+fmt(b.end):''}` : '';
-  if (b.note) {
-    metaDisplay = b.note;
-  }
+  if (b.note) { metaDisplay = b.note; }
   return`<div class="block" style="background:${col.bg};border-left-color:${col.border};color:${col.c}">
     <span class="block-name">${b.name}</span>
     ${metaDisplay ? `<span class="block-time" style="color:${col.c}">${metaDisplay}</span>` : ''}
@@ -621,22 +713,18 @@ function renderLegend(){
   }).join('');
 }
 
+/* --- TASKS TAB --- */
+
 function renderTasks(){
   const list=document.getElementById('task-list');
   if(!list)return;
   const todayTimes=getTodayTaskTimes();
   list.innerHTML=tasks.map(t=>{
-    const badgeCls=t.tier===1?'t1':t.tier===2?'t2':t.tier===3?'t3':t.tier==='r'?'tr':t.tier==='irr'?'ti-irr':'t4';
-    const label=t.tier==='r'?'Reminder Block':t.tier==='irr'?'Irregular Event':`Tier ${t.tier}`;
+    const badgeCls=t.tier===1?'t1':t.tier===2?'t2':t.tier===3?'t3':t.tier==='r'?'tr':'t4';
+    const label=t.tier==='r'?'Reminder Block':`Tier ${t.tier}`;
     
     let schedHtml = '';
-    if (t.tier === 'irr') {
-      schedHtml = `<span class="time-picker-wrapper">
-        <i class="ti ti-clock-bolt"></i> Time: 
-        <input type="time" value="${t.confirmedTime || ''}" onchange="updateTaskConfirmedTime(${t.id}, this.value)">
-        ${t.confirmedTime ? '' : '<span style="color:#B26A00;font-weight:600">(Undecided)</span>'}
-      </span>`;
-    } else if (!t.isReminder) {
+    if (!t.isReminder) {
       const sched=todayTimes[t.name];
       schedHtml = sched 
         ? `<span class="task-sched"><i class="ti ti-clock"></i> Slots Today ${fmt(sched.start)}–${fmt(sched.end)}</span>`
@@ -670,7 +758,7 @@ function renderTasks(){
 function renderPriority(){
   const pList = document.getElementById('priority-list');
   if(!pList) return;
-  const activeFloating=tasks.filter(t=>t.active && !t.isReminder && t.tier!=='irr');
+  const activeFloating=tasks.filter(t=>t.active && !t.isReminder);
   if(activeFloating.length===0){
     pList.innerHTML=`<div style="font-size:13.5px;color:var(--text2);text-align:center;padding:20px">No active floating targets found to sequence.</div>`;
     return;
@@ -712,10 +800,10 @@ function initDragLoop(e) {
 function addTask(){
   const name=document.getElementById('new-name').value.trim(); if(!name)return;
   const tierRaw=document.getElementById('new-tier').value;
-  const tier= (tierRaw==='r' || tierRaw==='irr') ? tierRaw : parseInt(tierRaw);
+  const tier= tierRaw==='r' ? tierRaw : parseInt(tierRaw);
   const mins=tier==='r'?0:parseInt(document.getElementById('new-mins').value)||30;
   
-  const days = Array.from(document.querySelectorAll('#new-task-days input')).filter(c=>c.checked).map(c=>parseInt(c.value));
+  const days = Array.from(document.querySelectorAll('#new-task-days input:checked')).map(c=>parseInt(c.value));
   if(days.length === 0) { alert('Please select at least one active day.'); return; }
   
   tasks.push({
@@ -725,8 +813,7 @@ function addTask(){
     mins: mins,
     active: true,
     days: days, 
-    isReminder: tier==='r',
-    confirmedTime: ''
+    isReminder: tier==='r'
   });
   
   document.getElementById('new-name').value='';
@@ -734,6 +821,7 @@ function addTask(){
   renderTasks(); 
   generateAndRender();
 }
+
 function removeTask(id){ if(confirm('Delete this task structural assignment?')){ tasks=tasks.filter(t=>t.id!==id); save(); renderTasks(); generateAndRender(); } }
 function toggleTask(id){ const t=tasks.find(x=>x.id===id); if(t){ t.active=!t.active; save(); renderTasks(); generateAndRender(); } }
 
@@ -744,6 +832,7 @@ function showTab(id,btn){
   if(btn)btn.classList.add('active');
   if(id==='tasks') renderTasks();
   if(id==='priority') renderPriority();
+  if(id==='settings') renderCommitments();
   if(id==='calendar') generateAndRender();
 }
 function changeWeek(d){weekOff+=d;generateAndRender();}
@@ -766,13 +855,13 @@ CHRONOLOGICAL MATRIX EFFICIENCY METRICS:
 
 ANALYTICAL ROADMAP SUGGESTIONS:
 1. Drag-and-drop hierarchy indicates tasks placed at the top stack claim slots instantly following your morning routine. Re-sort priorities whenever milestone targets shift.
-2. Irregular custom events are isolated automatically. Assign times inside your checklist view to instantly lock them into a hard timeline restriction.`;
+2. Irregular custom events are isolated automatically. Assign times inside your Time Blocks view to instantly lock them into a hard timeline restriction.`;
     btn.disabled=false; btn.innerHTML='<i class="ti ti-sparkles"></i> Generate strategic blueprint';
   }, 1100);
 }
 
 function exportData(){
-  const blob=new Blob([JSON.stringify({settings:cfg,tasks,version:'Master-3.0'},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({settings:cfg,tasks,version:'Master-4.0'},null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='universal-master-schedule.json';a.click();
 }
 function resetAll(){
