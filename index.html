@@ -315,7 +315,7 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
     <div class="card">
       <div class="card-title">AI-Powered Strategic Weekly Roadmap</div>
       <p style="font-size:13.5px;color:var(--text2);margin-bottom:16px">Supply your focal points for the week. The client engine dynamically evaluates your configured meal brackets, buffers, and floating assignments to plot an analytical optimization roadmap.</p>
-      <textarea id="ai-prompt" placeholder="e.g. My energy targets spike in the evening windows. Make sure critical items prioritize later slots and optimize tracking parameters..."></textarea>
+      <textarea id="ai-prompt" placeholder="e.g. Focus heavily on early morning productivity, prioritize critical milestones, and ensure balanced spacing across the week..."></textarea>
       <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
         <button class="btn btn-primary" id="ai-btn" onclick="callAI()"><i class="ti ti-sparkles"></i> Generate strategic blueprint</button>
         <button class="btn" onclick="generateAndRender();showTab('calendar',document.querySelector('.tab'))"><i class="ti ti-calendar"></i> Return to layout grid</button>
@@ -511,7 +511,6 @@ function buildDay(di){
 
   const dayTasks=tasks.filter(t => t.active && !t.isReminder);
   
-  // CRITICAL FEATURE FIX: Force timeline calculation engine to evaluate tasks strictly AFTER breakfast ends
   const bfastEnd = toMins(cfg.bfastS) + cfg.bfastD;
   let currentPointer = Math.max(wakeM, bfastEnd);
   
