@@ -79,7 +79,7 @@ input:checked+.slider:before{transform:translateX(18px)}
 .t3{background:#EAF3DE;color:#3B6D11;border-color:rgba(99,153,34,0.15)}
 .t4{background:#F1EFE8;color:#5F5E5A;border-color:rgba(136,135,128,0.15)}
 .tr{background:#FBEAF0;color:#993556;border-color:rgba(212,83,126,0.15)}
-.ti-badge{background:#FFF4E5;color:#B26200;border-color:rgba(255,152,0,0.15)}
+.ti-irr{background:#FFF4E5;color:#B26A00;border-color:rgba(255,170,0,0.25)}
 
 .week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap}
 .week-title{font-size:19px;font-weight:700;letter-spacing:-0.3px}
@@ -149,6 +149,9 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
 
 .theme-toggle-btn{background:var(--bg);border:1px solid var(--border2);color:var(--text);cursor:pointer;padding:8px 12px;border-radius:var(--radius);font-size:14px;display:flex;align-items:center;gap:6px;font-weight:600}
 .theme-toggle-btn:hover{background:var(--bg2)}
+
+.time-picker-wrapper {display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--text2)}
+.time-picker-wrapper input[type=time] {padding:4px 8px; width:auto; font-size:12px}
 </style>
 </head>
 <body>
@@ -199,13 +202,13 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
       <div id="task-list"></div>
       <div class="add-row">
         <div style="flex:2.5"><div class="field-label">Task name</div><input type="text" id="new-name" placeholder="e.g. Project Synthesis Research"/></div>
-        <div><div class="field-label">Priority Tier / Target Type</div>
+        <div><div class="field-label">Priority Tier</div>
           <select id="new-tier">
             <option value="1">Tier 1 — Critical Focus</option>
             <option value="2">Tier 2 — High Focus</option>
             <option value="3">Tier 3 — Medium Focus</option>
             <option value="4">Tier 4 — Low Focus</option>
-            <option value="i">Irregular / Custom Time Event</option>
+            <option value="irr">Irregular / Custom Event</option>
             <option value="r">Visual Reminder Only</option>
           </select>
         </div>
@@ -346,11 +349,11 @@ const DEFAULT_SETTINGS={
 };
 
 const DEFAULT_TASKS=[
-  {id:1,name:'Priority Deep Work Sprint',tier:1,mins:60,active:true,days:[0,1,2,3,4],isReminder:false},
-  {id:2,name:'Technical Revision Slot',tier:2,mins:45,active:true,days:[0,1,2,3,4,5,6],isReminder:false},
-  {id:3,name:'Creative & Open Research',tier:3,mins:45,active:true,days:[0,2,4],isReminder:false},
-  {id:4,name:'Administrative & Email Cleanout',tier:4,mins:30,active:true,days:[0,1,2,3,4,5,6],isReminder:false},
-  {id:5,name:'Weekly Strategic Horizon Audit',tier:'r',mins:0,active:true,days:[5,6],isReminder:true}
+  {id:1,name:'Priority Deep Work Sprint',tier:1,mins:60,active:true,days:[0,1,2,3,4],isReminder:false,confirmedTime:''},
+  {id:2,name:'Technical Revision Slot',tier:2,mins:45,active:true,days:[0,1,2,3,4,5,6],isReminder:false,confirmedTime:''},
+  {id:3,name:'Creative & Open Research',tier:3,mins:45,active:true,days:[0,2,4],isReminder:false,confirmedTime:''},
+  {id:4,name:'Administrative & Email Cleanout',tier:4,mins:30,active:true,days:[0,1,2,3,4,5,6],isReminder:false,confirmedTime:''},
+  {id:5,name:'Weekly Strategic Horizon Audit',tier:'r',mins:0,active:true,days:[5,6],isReminder:true,confirmedTime:''}
 ];
 
 let cfg={};let tasks=[];let weekOff=0;let nextId=10;
@@ -382,6 +385,15 @@ function save(){
   generateAndRender();
   if(cfg.notif) scheduleNotifications();
   updateNotifUI();
+}
+
+function updateTaskConfirmedTime(id, val) {
+  const t = tasks.find(x => x.id === id);
+  if (t) {
+    t.confirmedTime = val;
+    save();
+    if (document.getElementById('tab-tasks').classList.contains('active')) renderTasks();
+  }
 }
 
 function showToast(){
@@ -465,9 +477,9 @@ const COLORS={
   3:{bg:'#EAF3DE',c:'#3B6D11',border:'#639922'},
   4:{bg:'#F1EFE8',c:'#5F5E5A',border:'#888780'},
   r:{bg:'#FBEAF0',c:'#993556',border:'#D4537E'},
+  irr:{bg:'#FFF4E5',c:'#B26A00',border:'#FFAA00'},
   fixed:{bg:'#EEEDFE',c:'#534AB7',border:'#7F77DD'},
-  routine:{bg:'#E8F4F8',c:'#1D6F8A',border:'#3A9AD4'},
-  i:{bg:'#FFF4E5',c:'#B26200',border:'#FF9800'}
+  routine:{bg:'#E8F4F8',c:'#1D6F8A',border:'#3A9AD4'}
 };
 
 function buildDay(di){
@@ -491,15 +503,13 @@ function buildDay(di){
     if(se > ss) rawFixedBlocks.push({name: cfg.shiftLbl, s: ss, e: se, type: 'fixed'});
   }
 
-  const irregularTasks = tasks.filter(t => t.active && t.tier === 'i');
-  for(const task of irregularTasks) {
-    if(Array.isArray(task.days) && !task.days.includes(di)) continue;
-    if(task.time) {
-      const ts = toMins(task.time);
-      const te = ts + task.mins;
-      rawFixedBlocks.push({name: task.name, s: ts, e: te, type: 'i'});
+  // Inject confirmed irregular events as HARD constraints instantly
+  tasks.filter(t => t.active && t.tier === 'irr' && t.confirmedTime).forEach(task => {
+    if (Array.isArray(task.days) && task.days.includes(di)) {
+      const startM = toMins(task.confirmedTime);
+      rawFixedBlocks.push({name: task.name, s: startM, e: startM + task.mins, type: 'fixed', customType: 'irr'});
     }
-  }
+  });
 
   rawFixedBlocks.sort((a,b)=>a.s - b.s);
   const mergedFixed=[];
@@ -510,6 +520,7 @@ function buildDay(di){
       if(b.s < prev.e) {
         prev.e = Math.max(prev.e, b.e);
         if(b.type === 'fixed') prev.type = 'fixed';
+        if(b.customType === 'irr') prev.customType = 'irr';
         prev.name = prev.name.includes(b.name) ? prev.name : prev.name + ' & ' + b.name;
       } else { mergedFixed.push(b); }
     }
@@ -518,23 +529,18 @@ function buildDay(di){
   const timelineBlocks = [];
   for(const f of mergedFixed){
     if(f.s >= wakeM && f.e <= bedM) {
-      timelineBlocks.push({name: f.name, start: minsToTime(f.s), end: minsToTime(f.e), type: f.type});
+      timelineBlocks.push({name: f.name, start: minsToTime(f.s), end: minsToTime(f.e), type: f.customType || f.type});
     }
   }
 
-  const dayTasks=tasks.filter(t => t.active && !t.isReminder && t.tier !== 'i');
+  // Filter tasks out that are reminders or irregular events
+  const dayTasks=tasks.filter(t => t.active && t.isReminder !== true && t.tier !== 'irr');
   const bfastEnd = toMins(cfg.bfastS) + cfg.bfastD;
   let currentPointer = Math.max(wakeM, bfastEnd);
   const bufferGap = cfg.breakMins;
 
   for(const task of dayTasks) {
     if(Array.isArray(task.days) && !task.days.includes(di)) continue;
-    
-    if(typeof task.days === 'string') {
-      if(task.days==='weekdays' && isWeekend) continue;
-      if(task.days==='weekends' && !isWeekend) continue;
-      if(task.days==='alternate' && di%2===1) continue;
-    }
 
     let placed = false;
     while(!placed && currentPointer < bedM) {
@@ -551,17 +557,17 @@ function buildDay(di){
     }
   }
 
+  // Render Undecided Unconfirmed Irregular events
+  tasks.filter(t => t.active && t.tier === 'irr' && !t.confirmedTime).forEach(task => {
+    if (Array.isArray(task.days) && task.days.includes(di)) {
+      timelineBlocks.push({name: task.name, start: '', end: '', type: 'irr', note: '⏳ Time Undecided'});
+    }
+  });
+
   tasks.filter(t => t.active && t.isReminder).forEach(r => {
     if(Array.isArray(r.days) && !r.days.includes(di)) return;
     timelineBlocks.push({name: r.name, start: '', end: '', type: 'r', note: '📌'});
   });
-
-  for(const task of irregularTasks) {
-    if(Array.isArray(task.days) && !task.days.includes(di)) continue;
-    if(!task.time) {
-      timelineBlocks.push({name: task.name, start: '', end: '', type: 'i', note: '⏳ (Time Undecided)'});
-    }
-  }
 
   return timelineBlocks.sort((a,b)=> {
     if(!a.start) return 1; if(!b.start) return -1;
@@ -571,9 +577,13 @@ function buildDay(di){
 
 function blockEl(b){
   const col=COLORS[b.type]||COLORS[4];
+  let metaDisplay = b.start ? `${fmt(b.start)}${b.end?' – '+fmt(b.end):''}` : '';
+  if (b.note) {
+    metaDisplay = b.note;
+  }
   return`<div class="block" style="background:${col.bg};border-left-color:${col.border};color:${col.c}">
-    <span class="block-name">${b.name}${b.note?' '+b.note:''}</span>
-    ${b.start?`<span class="block-time" style="color:${col.c}">${fmt(b.start)}${b.end?' – '+fmt(b.end):''}</span>`:''}
+    <span class="block-name">${b.name}</span>
+    ${metaDisplay ? `<span class="block-time" style="color:${col.c}">${metaDisplay}</span>` : ''}
   </div>`;
 }
 
@@ -603,7 +613,7 @@ function generateAndRender(){
 function renderLegend(){
   const items=[
     {n:'Fixed Constraints',t:'fixed'},{n:'Meal / Routines',t:'routine'},
-    {n:'Tier 1 Focus',t:1},{n:'Tier 2 Focus',t:2},{n:'Tier 3 Focus',t:3},{n:'Irregular / Custom',t:'i'},{n:'Visual Reminders',t:'r'},
+    {n:'Tier 1 Focus',t:1},{n:'Tier 2 Focus',t:2},{n:'Irregular Window',t:'irr'},{n:'Visual Reminders',t:'r'},
   ];
   document.getElementById('legend').innerHTML=items.map(it=>{
     const c=COLORS[it.t]||COLORS[4];
@@ -616,26 +626,21 @@ function renderTasks(){
   if(!list)return;
   const todayTimes=getTodayTaskTimes();
   list.innerHTML=tasks.map(t=>{
-    let badgeCls='t4'; let label=`Tier ${t.tier}`;
-    if(t.tier===1) badgeCls='t1';
-    else if(t.tier===2) badgeCls='t2';
-    else if(t.tier===3) badgeCls='t3';
-    else if(t.tier==='r') { badgeCls='tr'; label='Reminder Block'; }
-    else if(t.tier==='i') { badgeCls='ti-badge'; label='Irregular Event'; }
-
-    const sched=todayTimes[t.name];
-    let schedHtml='';
-    if(t.isReminder){
-      schedHtml='';
-    } else if(t.tier==='i'){
-      schedHtml=`<div style="display:inline-flex;align-items:center;gap:6px;background:var(--bg2);padding:2px 8px;border-radius:var(--radius);border:1px solid var(--border2)">
-        <span style="font-size:11px;font-weight:600;color:var(--text2)"><i class="ti ti-clock"></i> Set Execution Time:</span>
-        <input type="time" value="${t.time||''}" onchange="updateIrregularTime(${t.id}, this.value)" style="width:auto;padding:2px 4px;font-size:11.5px;border-radius:4px;border:1px solid var(--border2);height:24px;background:var(--bg);color:var(--text);"/>
-      </div>`;
-    } else {
-      schedHtml=sched
-        ?`<span class="task-sched"><i class="ti ti-clock"></i> Slots Today ${fmt(sched.start)}–${fmt(sched.end)}</span>`
-        :`<span class="task-sched skip">No Active Match Today</span>`;
+    const badgeCls=t.tier===1?'t1':t.tier===2?'t2':t.tier===3?'t3':t.tier==='r'?'tr':t.tier==='irr'?'ti-irr':'t4';
+    const label=t.tier==='r'?'Reminder Block':t.tier==='irr'?'Irregular Event':`Tier ${t.tier}`;
+    
+    let schedHtml = '';
+    if (t.tier === 'irr') {
+      schedHtml = `<span class="time-picker-wrapper">
+        <i class="ti ti-clock-bolt"></i> Time: 
+        <input type="time" value="${t.confirmedTime || ''}" onchange="updateTaskConfirmedTime(${t.id}, this.value)">
+        ${t.confirmedTime ? '' : '<span style="color:#B26A00;font-weight:600">(Undecided)</span>'}
+      </span>`;
+    } else if (!t.isReminder) {
+      const sched=todayTimes[t.name];
+      schedHtml = sched 
+        ? `<span class="task-sched"><i class="ti ti-clock"></i> Slots Today ${fmt(sched.start)}–${fmt(sched.end)}</span>`
+        : `<span class="task-sched skip">No Active Match Today</span>`;
     }
 
     return`<div class="task-row" style="opacity:${t.active?1:0.45}">
@@ -646,9 +651,9 @@ function renderTasks(){
           <span class="badge ${badgeCls}">${label}</span>
           ${t.mins>0?`<span style="font-size:11px;color:var(--text2)">${t.mins} min commitment</span>`:''}
           <span style="font-size:11px;color:var(--text2);text-transform:capitalize">
-  <i class="ti ti-calendar-repeat"></i> 
-  ${Array.isArray(t.days) ? t.days.map(d => ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d]).join(', ') : t.days}
-</span>
+            <i class="ti ti-calendar-repeat"></i> 
+            ${Array.isArray(t.days) ? t.days.map(d => ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d]).join(', ') : t.days}
+          </span>
         </div>
       </div>
       <label class="toggle"><input type="checkbox" ${t.active?'checked':''} onchange="toggleTask(${t.id})"><span class="slider"></span></label>
@@ -656,26 +661,16 @@ function renderTasks(){
     </div>`;
   }).join('');
   const active=tasks.filter(t=>t.active);
-  const totalMins=active.filter(t=>!t.isReminder && t.tier!=='i').reduce((s,t)=>s+t.mins,0);
+  const totalMins=active.filter(t=>!t.isReminder).reduce((s,t)=>s+t.mins,0);
   document.getElementById('s-tasks').textContent=active.length;
   document.getElementById('s-time').textContent=mh(totalMins);
   document.getElementById('s-break').textContent=`${cfg.breakMins}m`;
 }
 
-function updateIrregularTime(id, val){
-  const t=tasks.find(x=>x.id===id);
-  if(t){
-    t.time=val;
-    save();
-    renderTasks();
-    generateAndRender();
-  }
-}
-
 function renderPriority(){
   const pList = document.getElementById('priority-list');
   if(!pList) return;
-  const activeFloating=tasks.filter(t=>t.active && !t.isReminder && t.tier !== 'i');
+  const activeFloating=tasks.filter(t=>t.active && !t.isReminder && t.tier!=='irr');
   if(activeFloating.length===0){
     pList.innerHTML=`<div style="font-size:13.5px;color:var(--text2);text-align:center;padding:20px">No active floating targets found to sequence.</div>`;
     return;
@@ -717,7 +712,7 @@ function initDragLoop(e) {
 function addTask(){
   const name=document.getElementById('new-name').value.trim(); if(!name)return;
   const tierRaw=document.getElementById('new-tier').value;
-  const tier=tierRaw==='r'?'r':tierRaw==='i'?'i':parseInt(tierRaw);
+  const tier= (tierRaw==='r' || tierRaw==='irr') ? tierRaw : parseInt(tierRaw);
   const mins=tier==='r'?0:parseInt(document.getElementById('new-mins').value)||30;
   
   const days = Array.from(document.querySelectorAll('#new-task-days input')).filter(c=>c.checked).map(c=>parseInt(c.value));
@@ -731,7 +726,7 @@ function addTask(){
     active: true,
     days: days, 
     isReminder: tier==='r',
-    time: tier==='i'?'':undefined
+    confirmedTime: ''
   });
   
   document.getElementById('new-name').value='';
@@ -759,9 +754,6 @@ async function callAI(){
   const card=document.getElementById('ai-card'); const result=document.getElementById('ai-result');
   card.style.display='block'; result.innerHTML='<div class="ai-loading">Evaluating timeline arrays...</div>';
 
-  const taskCtx=[...tasks].filter(t=>t.active).sort((a,b)=>(typeof a.tier==='number'?a.tier:9)-(typeof b.tier==='number'?b.tier:9))
-    .map(t=>`- ${t.name} (${t.tier==='r'?'reminder':(t.tier==='i'?'irregular':'Tier '+t.tier)}, ${t.mins}min/day, Days: ${Array.isArray(t.days) ? t.days.map(d => ['M','T','W','Th','F','Sa','Su'][d]).join(',') : t.days})`).join('\n');
-
   setTimeout(() => {
     result.textContent = `USER STRATEGIC OPTIMIZATION BLUEPRINT GENERATED
     
@@ -774,13 +766,13 @@ CHRONOLOGICAL MATRIX EFFICIENCY METRICS:
 
 ANALYTICAL ROADMAP SUGGESTIONS:
 1. Drag-and-drop hierarchy indicates tasks placed at the top stack claim slots instantly following your morning routine. Re-sort priorities whenever milestone targets shift.
-2. The current total time commitment scales beautifully across available placement slots. Adjust buffer durations to tighten or expand focus flexibility.`;
+2. Irregular custom events are isolated automatically. Assign times inside your checklist view to instantly lock them into a hard timeline restriction.`;
     btn.disabled=false; btn.innerHTML='<i class="ti ti-sparkles"></i> Generate strategic blueprint';
   }, 1100);
 }
 
 function exportData(){
-  const blob=new Blob([JSON.stringify({settings:cfg,tasks,version:'Master-3.1'},null,2)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({settings:cfg,tasks,version:'Master-3.0'},null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='universal-master-schedule.json';a.click();
 }
 function resetAll(){
