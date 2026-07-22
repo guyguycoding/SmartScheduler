@@ -5,11 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Ultimate Dynamic Scheduler - Premium Master Edition</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
 <style>
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -167,9 +162,6 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
       <span id="notif-dot" title="Notifications active" style="display:none;color:var(--accent);font-size:13px"><i class="ti ti-bell-filled"></i></span>
     </div>
     <div class="right-actions">
-      <button id="auth-btn" class="theme-toggle-btn" onclick="handleAuth()">
-        <i id="auth-icon" class="ti ti-login"></i> <span id="auth-text">Sign In</span>
-      </button>
       <button class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light/Dark mode">
         <i id="theme-icon" class="ti ti-moon"></i> <span id="theme-text">Dark</span>
       </button>
@@ -361,13 +353,6 @@ body.dark-theme #toast{background:#f0efe9;color:#1a1a1a}
 <div id="toast"><i class="ti ti-circle-check-filled" style="color:#52c41a"></i> Data changes synced</div>
 
 <script>
-// --- SUPABASE INITIALIZATION ---
-const SUPABASE_URL = 'https://pzoviggwmfuswyfswwlb.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6b3ZpZ2d3bWZ1c3d5ZnN3d2xiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3MzExNzcsImV4cCI6MjEwMDMwNzE3N30.jBppS3F2q0TfgYZpqExwfx5JSb4t32mhNczqj8adarE';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-let currentUser = null;
-
 const DEFAULT_SETTINGS={
   wake:'06:00', bed:'22:30',
   breakMins:10, mPrepMins:30,
@@ -391,76 +376,7 @@ const DEFAULT_TASKS=[
 
 let cfg={};let tasks=[];let weekOff=0;let nextId=10;
 
-// Listen for Auth changes on boot and login/logout
-supabase.auth.onAuthStateChange((event, session) => {
-  currentUser = session?.user || null;
-  const authText = document.getElementById('auth-text');
-  const authIcon = document.getElementById('auth-icon');
-  
-  if (currentUser) {
-    if (authText) authText.textContent = 'Sign Out';
-    if (authIcon) authIcon.className = 'ti ti-logout';
-    loadFromDB();
-  } else {
-    if (authText) authText.textContent = 'Sign In';
-    if (authIcon) authIcon.className = 'ti ti-login';
-    loadLocal();
-  }
-});
-
-async function handleAuth() {
-  if (currentUser) {
-    await supabase.auth.signOut();
-  } else {
-    const input = prompt('Enter your email for Magic Link sign-in, or leave blank to continue with Google OAuth:');
-    if (input === null) return; // User cancelled
-    
-    if (input.trim() === '') {
-      await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: { redirectTo: window.location.origin }
-      });
-    } else {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: input.trim(),
-        options: { emailRedirectTo: window.location.origin }
-      });
-      if (error) alert(error.message);
-      else alert('Check your email for your magic sign-in link!');
-    }
-  }
-}
-
-async function loadFromDB() {
-  if (!currentUser) return loadLocal();
-
-  try {
-    const { data, error } = await supabase
-      .from('schedules')
-      .select('cfg, tasks, next_id')
-      .eq('user_id', currentUser.id)
-      .maybeSingle();
-
-    if (data) {
-      cfg = Object.assign({...DEFAULT_SETTINGS}, data.cfg || {});
-      if(!cfg.commitments) cfg.commitments = [...DEFAULT_SETTINGS.commitments];
-      tasks = Array.isArray(data.tasks) && data.tasks.length > 0 
-        ? data.tasks 
-        : DEFAULT_TASKS.map(t=>({...t}));
-      nextId = data.next_id || 10;
-    } else {
-      loadLocalDataOnly();
-      await saveToDB(); // Sync existing local setup into database on initial user creation
-    }
-  } catch(e) {
-    console.error("Error loading schedule from DB:", e);
-    loadLocalDataOnly();
-  }
-  
-  finalizeLoad();
-}
-
-function loadLocalDataOnly() {
+function load(){
   try {
     const rawCfg = localStorage.getItem('master-cfg');
     cfg = rawCfg ? Object.assign({...DEFAULT_SETTINGS}, JSON.parse(rawCfg)) : {...DEFAULT_SETTINGS};
@@ -473,46 +389,17 @@ function loadLocalDataOnly() {
     if(!Array.isArray(tasks) || tasks.length === 0) { tasks = DEFAULT_TASKS.map(t=>({...t})); }
   } catch(e) { tasks = DEFAULT_TASKS.map(t=>({...t})); }
   
-  try { nextId = JSON.parse(localStorage.getItem('master-nid')) || 10; } catch { nextId = 10; }
-}
-
-function loadLocal() {
-  loadLocalDataOnly();
-  finalizeLoad();
-}
-
-function finalizeLoad() {
+  try{nextId=JSON.parse(localStorage.getItem('master-nid'))||10;}catch{nextId=10;}
+  
   applyTheme(cfg.theme || 'light');
   applyToUI();
-  generateAndRender();
-  renderTasks();
-  if(cfg.notif && 'Notification' in window && Notification.permission === 'granted') scheduleNotifications();
 }
 
-async function saveToDB() {
-  if (!currentUser) return;
-  const { error } = await supabase
-    .from('schedules')
-    .upsert({ 
-      user_id: currentUser.id, 
-      cfg: cfg, 
-      tasks: tasks, 
-      next_id: nextId 
-    });
-  if (error) console.error("Supabase sync error:", error);
-}
-
-async function save() {
+function save(){
   readFromUI();
-  
-  localStorage.setItem('master-cfg', JSON.stringify(cfg));
-  localStorage.setItem('master-tasks', JSON.stringify(tasks));
-  localStorage.setItem('master-nid', JSON.stringify(nextId));
-
-  if (currentUser) {
-    await saveToDB();
-  }
-
+  localStorage.setItem('master-cfg',JSON.stringify(cfg));
+  localStorage.setItem('master-tasks',JSON.stringify(tasks));
+  localStorage.setItem('master-nid',JSON.stringify(nextId));
   showToast();
   generateAndRender();
   if(cfg.notif) scheduleNotifications();
@@ -559,7 +446,7 @@ function toggleTheme(){
   const targetTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
   applyTheme(targetTheme);
   cfg.theme = targetTheme;
-  save();
+  localStorage.setItem('master-cfg',JSON.stringify(cfg));
 }
 
 function applyTheme(theme){
@@ -657,15 +544,19 @@ function addCommitment() {
   cfg.commitments.push(entry);
   document.getElementById('new-c-name').value = '';
   
-  save();
+  localStorage.setItem('master-cfg', JSON.stringify(cfg));
+  showToast();
   renderCommitments();
+  generateAndRender();
 }
 
 function removeCommitment(id) {
   if(confirm('Delete this structural constraint?')) {
     cfg.commitments = cfg.commitments.filter(c => c.id !== id);
-    save();
+    localStorage.setItem('master-cfg', JSON.stringify(cfg));
+    showToast();
     renderCommitments();
+    generateAndRender();
   }
 }
 
@@ -673,8 +564,10 @@ function updateCommitmentTime(id, val) {
   const c = cfg.commitments.find(x => x.id === id);
   if(c) {
     c.confirmedTime = val;
-    save();
+    localStorage.setItem('master-cfg', JSON.stringify(cfg));
+    showToast();
     renderCommitments();
+    generateAndRender();
   }
 }
 
@@ -732,7 +625,7 @@ function buildDay(di){
     }
   }
 
-  // Floating tasks mapping
+  // Floating tasks mapping (Strictly after breakfast ends)
   const dayTasks=tasks.filter(t => t.active && !t.isReminder);
   const bfastEnd = toMins(cfg.bfastS) + cfg.bfastD;
   let currentPointer = Math.max(wakeM, bfastEnd);
@@ -756,7 +649,7 @@ function buildDay(di){
     }
   }
 
-  // Add Undecided Irregular events to timeline
+  // Add Undecided Irregular events to timeline purely as visuals
   if(cfg.commitments) {
     cfg.commitments.forEach(c => {
       if(c.days.includes(di) && c.type === 'irregular' && !c.confirmedTime) {
@@ -926,10 +819,11 @@ function addTask(){
   document.getElementById('new-name').value='';
   save(); 
   renderTasks(); 
+  generateAndRender();
 }
 
-function removeTask(id){ if(confirm('Delete this task structural assignment?')){ tasks=tasks.filter(t=>t.id!==id); save(); renderTasks(); } }
-function toggleTask(id){ const t=tasks.find(x=>x.id===id); if(t){ t.active=!t.active; save(); renderTasks(); } }
+function removeTask(id){ if(confirm('Delete this task structural assignment?')){ tasks=tasks.filter(t=>t.id!==id); save(); renderTasks(); generateAndRender(); } }
+function toggleTask(id){ const t=tasks.find(x=>x.id===id); if(t){ t.active=!t.active; save(); renderTasks(); generateAndRender(); } }
 
 function showTab(id,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -970,15 +864,12 @@ function exportData(){
   const blob=new Blob([JSON.stringify({settings:cfg,tasks,version:'Master-4.0'},null,2)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='universal-master-schedule.json';a.click();
 }
-
 function resetAll(){
   if(confirm('Wipe calendar engine memory and local application storage configurations?')){
     localStorage.clear(); cfg={...DEFAULT_SETTINGS}; tasks=DEFAULT_TASKS.map(t=>({...t})); nextId=10;
-    save();
-    applyTheme('light'); applyToUI(); renderTasks(); showToast();
+    applyTheme('light'); applyToUI(); renderTasks(); generateAndRender(); showToast();
   }
 }
-
 function getTodayTaskTimes(){
   const di=(new Date().getDay()+6)%7; const blocks=buildDay(di); const map={};
   blocks.forEach(b=>{if(b.start&&b.end&&b.name)map[b.name]={start:b.start,end:b.end};}); return map;
@@ -1006,13 +897,11 @@ function updateNotifUI(){
     upcoming.style.display=''; upcoming.innerHTML=soon.length?'<strong>Up Next:</strong> '+soon.map(b=>`${b.name} (${fmt(b.start)})`).join(' · '):'No remaining timed blocks scheduled today.';
   }else if(upcoming){upcoming.style.display='none';}
 }
-
 function handleNotifBtn(){
   if(!('Notification'in window))return;
-  if(cfg.notif&&Notification.permission==='granted'){ cfg.notif=false; cancelNotifications(); save(); updateNotifUI(); return; }
-  Notification.requestPermission().then(p=>{ cfg.notif=p==='granted'; save(); updateNotifUI(); if(cfg.notif)scheduleNotifications(); });
+  if(cfg.notif&&Notification.permission==='granted'){ cfg.notif=false; cancelNotifications(); localStorage.setItem('master-cfg',JSON.stringify(cfg)); updateNotifUI(); return; }
+  Notification.requestPermission().then(p=>{ cfg.notif=p==='granted'; localStorage.setItem('master-cfg',JSON.stringify(cfg)); updateNotifUI(); if(cfg.notif)scheduleNotifications(); });
 }
-
 function scheduleNotifications(){
   cancelNotifications(); if(!cfg.notif||!('Notification'in window)||Notification.permission!=='granted')return;
   const now=new Date(); const di=(now.getDay()+6)%7; const blocks=buildDay(di); const advance=(cfg.notifAdvance||10)*60*1000;
@@ -1023,6 +912,11 @@ function scheduleNotifications(){
   });
 }
 function cancelNotifications(){ _notifTimeouts.forEach(t=>clearTimeout(t)); _notifTimeouts=[]; }
+
+load();
+generateAndRender();
+renderTasks();
+if(cfg.notif&&'Notification'in window&&Notification.permission==='granted') scheduleNotifications();
 </script>
 </body>
 </html>
